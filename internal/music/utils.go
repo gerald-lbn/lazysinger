@@ -1,6 +1,7 @@
 package music
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -13,11 +14,16 @@ const (
 )
 
 func IsMusicFile(path string) bool {
-	extName := strings.ToLower(filepath.Ext(path))
-	switch extName {
-	case MP3_EXTENSION, FLAC_EXTENSION:
-		return true
-	default:
-		return false
+	fi, _ := os.Stat(path)
+	if fi.Mode().IsRegular() {
+		extName := strings.ToLower(filepath.Ext(path))
+		switch extName {
+		case MP3_EXTENSION, FLAC_EXTENSION:
+			return true
+		default:
+			return false
+		}
 	}
+
+	return false
 }
