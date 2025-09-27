@@ -41,14 +41,27 @@ func NewLyricsProvider() *LyricsProvider {
 	return &LyricsProvider{}
 }
 
-func (lp *LyricsProvider) Get(trackName string, artistName string, albumName string, duration int) (LyricsResponse, error) {
+type GetParameters struct {
+	TrackName  string
+	ArtistName string
+	AlbumName  string
+	Duration   *int
+}
+
+func (lp *LyricsProvider) Get(parameters GetParameters) (LyricsResponse, error) {
 	client := http.Client{}
 
-	trackName = strings.ReplaceAll(trackName, " ", "+")
-	artistName = strings.ReplaceAll(artistName, " ", "+")
-	albumName = strings.ReplaceAll(albumName, " ", "+")
+	trackName := strings.ReplaceAll(parameters.TrackName, " ", "+")
+	artistName := strings.ReplaceAll(parameters.ArtistName, " ", "+")
+	albumName := strings.ReplaceAll(parameters.AlbumName, " ", "+")
 
-	url := fmt.Sprintf("%s/get?artist_name=%s&track_name=%s&album_name=%s&duration=%d", lrcLibBaseURl, artistName, trackName, albumName, duration)
+	url := fmt.Sprintf("%s/get?artist_name=%s&track_name=%s", lrcLibBaseURl, artistName, trackName)
+	if albumName != "" {
+		url += fmt.Sprintf("&album_name=%s", albumName)
+	}
+	if parameters.Duration != nil {
+		url += fmt.Sprintf("&duration=%d", *parameters.Duration)
+	}
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return LyricsResponse{}, err

@@ -18,24 +18,26 @@ func (suite *TestSuite) SetupTest() {
 }
 
 func (suite *TestSuite) TestLyricsNotFoundReturnsError() {
-	trackName := "abc"
-	artistName := "abc"
-	albumName := "abc"
 	duration := 150
-
-	lyrics, err := suite.lyricsProvider.Get(trackName, artistName, albumName, duration)
+	lyrics, err := suite.lyricsProvider.Get(lyrics.GetParameters{
+		TrackName:  "abc",
+		ArtistName: "abc",
+		AlbumName:  "abc",
+		Duration:   &duration,
+	})
 
 	assert.Empty(suite.T(), lyrics)
 	assert.Error(suite.T(), err)
 }
 
 func (suite *TestSuite) TestLyricsFoundDoesNotReturnError() {
-	trackName := "Everglow"
-	artistName := "STARSET"
-	albumName := "Vessels 2.0"
 	duration := 476
-
-	lyrics, err := suite.lyricsProvider.Get(trackName, artistName, albumName, duration)
+	lyrics, err := suite.lyricsProvider.Get(lyrics.GetParameters{
+		TrackName:  "Everglow",
+		ArtistName: "STARSET",
+		AlbumName:  "Vessels 2.0",
+		Duration:   &duration,
+	})
 
 	assert.NotEmpty(suite.T(), lyrics)
 	assert.NoError(suite.T(), err)
