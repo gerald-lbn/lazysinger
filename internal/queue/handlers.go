@@ -39,8 +39,8 @@ func HandleDownloadLyrics(ctx context.Context, t *asynq.Task) error {
 				log.Printf("Found synced lyrics for %s, saving them locally", p.Filepath)
 				err := lyrics.DownloadLyrics(metadata.PathToSyncedLyrics, results.SyncedLyrics)
 				if err != nil {
-					log.Printf("An error occured while saving synced lyrics to %s", metadata.PathToSyncedLyrics)
-					return nil
+					log.Printf("An error occured while saving synced lyrics to %s: %v", metadata.PathToSyncedLyrics, err)
+					return err
 				}
 				log.Printf("Successfully saved synced lyrics at %s", metadata.PathToSyncedLyrics)
 			}
@@ -51,8 +51,8 @@ func HandleDownloadLyrics(ctx context.Context, t *asynq.Task) error {
 				log.Printf("Found plain lyrics for %s, saving them locally", p.Filepath)
 				err := lyrics.DownloadLyrics(metadata.PathToPlainLyrics, results.PlainLyrics)
 				if err != nil {
-					log.Printf("An error occured while saving plain lyrics to %s", metadata.PathToPlainLyrics)
-					return nil
+					log.Printf("An error occured while saving plain lyrics to %s: %v", metadata.PathToPlainLyrics, err)
+					return err
 				}
 				log.Printf("Successfully saved plain lyrics at %s", metadata.PathToPlainLyrics)
 			}
