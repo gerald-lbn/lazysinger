@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/gerald-lbn/lyrisync/internal/lyrics"
-	"github.com/gerald-lbn/lyrisync/internal/music"
+	"github.com/gerald-lbn/lazysinger/internal/lyrics"
+	"github.com/gerald-lbn/lazysinger/internal/music"
 	"github.com/hibiken/asynq"
 )
 

@@ -3,7 +3,7 @@ package tests
 import (
 	"testing"
 
-	"github.com/gerald-lbn/lyrisync/internal/lyrics"
+	"github.com/gerald-lbn/lazysinger/internal/lyrics"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )

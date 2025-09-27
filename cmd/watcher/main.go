@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/gerald-lbn/lyrisync/internal/config"
-	"github.com/gerald-lbn/lyrisync/internal/music"
-	"github.com/gerald-lbn/lyrisync/internal/queue"
+	"github.com/gerald-lbn/lazysinger/internal/config"
+	"github.com/gerald-lbn/lazysinger/internal/music"
+	"github.com/gerald-lbn/lazysinger/internal/queue"
 	"github.com/hibiken/asynq"
 )
 

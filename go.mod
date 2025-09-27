@@ -1,4 +1,4 @@
-module github.com/gerald-lbn/lyrisync
+module github.com/gerald-lbn/lazysinger
 
 go 1.24.7
 

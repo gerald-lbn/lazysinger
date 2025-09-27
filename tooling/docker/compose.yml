@@ -1,4 +1,4 @@
-name: lyrisync
+name: lazysinger
 
 services:
   redis:
