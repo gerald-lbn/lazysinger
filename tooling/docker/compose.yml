@@ -1,6 +1,15 @@
 name: lyrisync
 
 services:
+  redis:
+    container_name: redis
+    env_file:
+      - ../../.env.test
+    image: "redis:8.2.1"
+    command: "redis-server --save 20 1"
+    volumes:
+      - redis_data:/data
+
   watcher:
     build:
       context: ../..
@@ -10,3 +19,8 @@ services:
       - ../../.env.test
     volumes:
       - /home/gerald/Documents/Music:/music
+    depends_on:
+      - redis
+
+volumes:
+  redis_data:
