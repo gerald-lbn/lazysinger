@@ -11,7 +11,6 @@ COPY go.mod go.sum ./
 RUN go mod download
 # Copy the source code
 COPY . .
-# # Build the Go application (strip debug info for smaller size)
 RUN go build ./cmd/watcher
 
 FROM base
