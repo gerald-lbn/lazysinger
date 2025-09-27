@@ -6,7 +6,7 @@ services:
     env_file:
       - ../../.env.test
     image: "redis:8.2.1"
-    command: "redis-server --save 20 1"
+    command: "redis-server --save 20 1 --loglevel warning"
     volumes:
       - redis_data:/data
 
@@ -15,6 +15,18 @@ services:
       context: ../..
       dockerfile: tooling/docker/watcher.Dockerfile
     container_name: watcher
+    env_file:
+      - ../../.env.test
+    volumes:
+      - /home/gerald/Documents/Music:/music:ro
+    depends_on:
+      - redis
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: tooling/docker/worker.Dockerfile
+    container_name: worker
     env_file:
       - ../../.env.test
     volumes:
