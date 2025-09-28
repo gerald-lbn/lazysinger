@@ -63,3 +63,35 @@ func HandleDownloadLyrics(ctx context.Context, t *asynq.Task) error {
 
 	return nil
 }
+
+func HandleDeleteLyrics(ctx context.Context, t *asynq.Task) error {
+	var p LyricsDeletePayload
+	if err := json.Unmarshal(t.Payload(), &p); err != nil {
+		return fmt.Errorf("Unable to json.Unmarshal task payload: %v: %w", err, asynq.SkipRetry)
+	}
+
+	metadata, err := music.ExtractMetadaFromMusicFile(p.Filepath)
+	if err != nil {
+		return fmt.Errorf("Unable to extract metadata: %v", err)
+	}
+
+	if metadata.HasPlainLyrics {
+		log.Printf("Removing lyrics stored at %s", metadata.PathToPlainLyrics)
+		if err := lyrics.DeleteLyrics(metadata.PathToPlainLyrics); err != nil {
+			log.Printf("An error occured when deleting lyrics at %s: %v", metadata.PathToPlainLyrics, err)
+			return err
+		}
+		log.Printf("Lyrics stored at %s removed", metadata.PathToPlainLyrics)
+	}
+
+	if metadata.HasSyncedLyrics {
+		log.Printf("Removing lyrics stored at %s", metadata.PathToSyncedLyrics)
+		if err := lyrics.DeleteLyrics(metadata.PathToSyncedLyrics); err != nil {
+			log.Printf("An error occured when deleting lyrics at %s: %v", metadata.PathToSyncedLyrics, err)
+			return err
+		}
+		log.Printf("Lyrics stored at %s removed", metadata.PathToSyncedLyrics)
+	}
+
+	return nil
+}

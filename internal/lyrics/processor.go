@@ -19,3 +19,8 @@ func DownloadLyrics(pathToFile string, lyrics string) error {
 
 	return err
 }
+
+func DeleteLyrics(pathToFile string) error {
+	err := os.Remove(pathToFile)
+	return err
+}

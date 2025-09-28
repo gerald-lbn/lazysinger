@@ -18,6 +18,12 @@ func main() {
 		},
 		asynq.Config{
 			Concurrency: 5,
+			Queues: map[string]int{
+				queue.CRITICAL: 6,
+				queue.DEFAULT:  3,
+				queue.LOW:      1,
+			},
+			StrictPriority: true,
 		},
 	)
 

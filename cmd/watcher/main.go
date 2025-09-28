@@ -39,7 +39,13 @@ func main() {
 	}
 
 	watcher.HandleDelete = func(pathToFile string) error {
-		log.Printf("File deleted: %s.", pathToFile)
+		log.Printf("File deleted: %s. Pushing it to queue", pathToFile)
+		task, err := queue.NewDeleteLyricsTask(pathToFile)
+		if err != nil {
+			return err
+		}
+		info, err := asynqClient.Enqueue(task, asynq.Queue(queue.CRITICAL))
+		log.Printf("Job #%s created and pushed to queue '%s' to process %s", info.ID, info.Queue, pathToFile)
 		return nil
 	}
 
