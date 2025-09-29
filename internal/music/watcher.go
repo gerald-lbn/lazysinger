@@ -119,7 +119,8 @@ func (lw *LibraryWatcher) Start() {
 }
 
 func (lw *LibraryWatcher) Wait() {
-	select {}
+	// select {}
+	<-make(chan struct{})
 }
 
 func (lw *LibraryWatcher) Close() error {
