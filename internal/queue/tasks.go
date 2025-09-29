@@ -2,6 +2,7 @@ package queue
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/hibiken/asynq"
 )
@@ -26,7 +27,9 @@ func NewDownloadLyricsTask(filepath string) (*asynq.Task, error) {
 		return nil, err
 	}
 
-	return asynq.NewTask(TypeLyricsDownload, payload), nil
+	// Let times for the lyrics (.lrc and .txt) to be present on the filesystem.
+	// Prevent false-negative local lyrics detection
+	return asynq.NewTask(TypeLyricsDownload, payload, asynq.ProcessIn(10*time.Second)), nil
 }
 
 func NewDeleteLyricsTask(filepath string) (*asynq.Task, error) {
