@@ -94,9 +94,34 @@ func (lp *LyricsProvider) Get(parameters GetParameters) (LyricsResponse, error) 
 
 	lyrics := LyricsResponse{}
 	errJson := json.Unmarshal(body, &lyrics)
-	if errJson != nil {
-		return LyricsResponse{}, errJson
+	return lyrics, errJson
+}
+
+func (lp *LyricsProvider) RequestChallenge() (RequestChallenge, error) {
+	client := http.Client{}
+
+	url := fmt.Sprintf("%s/request-challenge", lrcLibBaseURl)
+	req, err := http.NewRequest(http.MethodPost, url, nil)
+	if err != nil {
+		return RequestChallenge{}, err
 	}
 
-	return lyrics, nil
+	res, errRes := client.Do(req)
+	if errRes != nil {
+		return RequestChallenge{}, errRes
+	}
+
+	if res.Body != nil {
+		defer res.Body.Close()
+	}
+
+	body, errRead := io.ReadAll(res.Body)
+	if errRead != nil {
+		return RequestChallenge{}, errRead
+	}
+
+	rc := RequestChallenge{}
+	errJson := json.Unmarshal(body, &rc)
+	return rc, errJson
+
 }
