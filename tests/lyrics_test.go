@@ -43,6 +43,14 @@ func (suite *TestSuite) TestLyricsFoundDoesNotReturnError() {
 	assert.NoError(suite.T(), err)
 }
 
+func (suite *TestSuite) TestRequestChallentDoesNotReturnError() {
+	rc, err := suite.lyricsProvider.RequestChallenge()
+	assert.NotEmpty(suite.T(), rc)
+	assert.NotEmpty(suite.T(), rc.Prefix)
+	assert.NotEmpty(suite.T(), rc.Target)
+	assert.NoError(suite.T(), err)
+}
+
 func TestLyricsTestSuite(t *testing.T) {
 	suite.Run(t, new(TestSuite))
 }
