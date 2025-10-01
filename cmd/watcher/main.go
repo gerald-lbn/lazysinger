@@ -59,6 +59,19 @@ func main() {
 		return nil
 	}
 
+	watcher.HandleFileOnInitialScan = func(pathToFile string) error {
+		task, err := queue.NewDownloadLyricsTask(pathToFile)
+		if err != nil {
+			return err
+		}
+		info, err := asynqClient.Enqueue(task)
+		if err != nil {
+			return err
+		}
+		log.Printf("Job #%s created and pushed to queue '%s' to process %s", info.ID, info.Queue, pathToFile)
+		return nil
+	}
+
 	if err := watcher.InitialScan(); err != nil {
 		log.Fatalf("Initial scan failed: %v", err)
 	} else {
