@@ -43,6 +43,8 @@ func HandleDownloadLyrics(ctx context.Context, t *asynq.Task) error {
 					return err
 				}
 				log.Printf("Successfully saved synced lyrics at %s", metadata.PathToSyncedLyrics)
+			} else {
+				log.Printf("No synced lyrics found from provider for %s", p.Filepath)
 			}
 		}
 		if !metadata.HasPlainLyrics {
@@ -55,6 +57,8 @@ func HandleDownloadLyrics(ctx context.Context, t *asynq.Task) error {
 					return err
 				}
 				log.Printf("Successfully saved plain lyrics at %s", metadata.PathToPlainLyrics)
+			} else {
+				log.Printf("No plain lyrics found from provider for %s", p.Filepath)
 			}
 		}
 	} else {
