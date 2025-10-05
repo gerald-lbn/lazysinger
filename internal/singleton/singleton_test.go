@@ -1,11 +1,10 @@
-package singleton_test
+package singleton
 
 import (
 	"sync"
 	"sync/atomic"
 	"testing"
 
-	"github.com/gerald-lbn/lazysinger/internal/singleton"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -24,22 +23,22 @@ var _ = Describe("GetInstance", func() {
 	}
 
 	It("calls the constructor to create a new instance", func() {
-		instance := singleton.GetInstance(constructor)
+		instance := GetInstance(constructor)
 		Expect(numInstancesCreated).To(Equal(1))
 		Expect(instance).To(BeAssignableToTypeOf(&T{}))
 	})
 
 	It("does not call the constructor the next time", func() {
-		instance := singleton.GetInstance(constructor)
-		newInstance := singleton.GetInstance(constructor)
+		instance := GetInstance(constructor)
+		newInstance := GetInstance(constructor)
 
 		Expect(newInstance.id).To(Equal(instance.id))
 		Expect(numInstancesCreated).To(Equal(1))
 	})
 
 	It("makes a distinction between a type and its pointer", func() {
-		instance := singleton.GetInstance(constructor)
-		newInstance := singleton.GetInstance(func() T {
+		instance := GetInstance(constructor)
+		newInstance := GetInstance(func() T {
 			numInstancesCreated++
 			return T{id: numInstancesCreated}
 		})
@@ -75,7 +74,7 @@ var _ = Describe("GetInstance", func() {
 
 				// Wait for all goroutines to be ready
 				start.Wait()
-				instance := singleton.GetInstance(func() struct{ I int } {
+				instance := GetInstance(func() struct{ I int } {
 					numInstancesCreated++
 					return struct{ I int }{I: numInstancesCreated}
 				})
