@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"github.com/fsnotify/fsnotify"
 )
@@ -67,11 +68,11 @@ func (lw *LibraryWatcher) Start() {
 					return
 				}
 
-				if event.Op&fsnotify.Create == fsnotify.Create {
+				log.Printf("raw event: %s, path: %s", event.Op.String(), event.Name)
+				if event.Has(fsnotify.Create) {
 					fileInfo, err := os.Stat(event.Name)
 					if err != nil {
 						log.Printf("Error stating %s: %v\n", event.Name, err)
-						continue
 					}
 					if fileInfo.IsDir() {
 						if err := lw.watcher.Add(event.Name); err != nil {
@@ -84,7 +85,15 @@ func (lw *LibraryWatcher) Start() {
 					}
 				}
 
-				if event.Op&fsnotify.Rename == fsnotify.Rename {
+				if event.Has(fsnotify.Rename) {
+					if slices.Contains(lw.watcher.WatchList(), event.Name) {
+						err := lw.watcher.Remove(event.Name)
+						if err != nil {
+							log.Printf("error while removing %s from watchlist: %v\n", event.Name, err)
+						} else {
+							log.Printf("successfully removed %s from watchlist", event.Name)
+						}
+					}
 					if lw.HandleRename != nil {
 						if err := lw.HandleRename(event.Name); err != nil {
 							log.Printf("Error handling rename event for %s: %v\n", event.Name, err)
@@ -92,7 +101,7 @@ func (lw *LibraryWatcher) Start() {
 					}
 				}
 
-				if event.Op&fsnotify.Remove == fsnotify.Remove {
+				if event.Has(fsnotify.Remove) {
 					if lw.HandleDelete != nil {
 						if err := lw.HandleDelete(event.Name); err != nil {
 							log.Printf("Error handling delete event for %s: %v\n", event.Name, err)
@@ -100,7 +109,7 @@ func (lw *LibraryWatcher) Start() {
 					}
 				}
 
-				if event.Op&fsnotify.Chmod == fsnotify.Chmod {
+				if event.Has(fsnotify.Chmod) {
 					if lw.HandleChmod != nil {
 						if err := lw.HandleChmod(event.Name); err != nil {
 							log.Printf("Error handling chmod event for %s: %v\n", event.Name, err)
@@ -116,6 +125,11 @@ func (lw *LibraryWatcher) Start() {
 			}
 		}
 	}()
+
+	err := lw.watcher.Add(lw.Directory)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (lw *LibraryWatcher) Wait() {
