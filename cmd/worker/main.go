@@ -13,8 +13,7 @@ func main() {
 
 	asynqServer := asynq.NewServer(
 		asynq.RedisClientOpt{
-			Addr:     cfg.RedisAddr,
-			Password: cfg.RedisPassword,
+			Addr: cfg.RedisAddr,
 		},
 		asynq.Config{
 			Concurrency: 5,

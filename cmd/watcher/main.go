@@ -13,8 +13,7 @@ func main() {
 	cfg := config.LoadConfig()
 
 	asynqClient := asynq.NewClient(asynq.RedisClientOpt{
-		Addr:     cfg.RedisAddr,
-		Password: cfg.RedisPassword,
+		Addr: cfg.RedisAddr,
 	})
 	defer asynqClient.Close()
 
