@@ -14,7 +14,11 @@ const (
 )
 
 func IsMusicFile(path string) bool {
-	fi, _ := os.Stat(path)
+	fi, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+
 	if fi.Mode().IsRegular() {
 		extName := strings.ToLower(filepath.Ext(path))
 		switch extName {
