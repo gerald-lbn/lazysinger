@@ -68,7 +68,7 @@ func (lw *LibraryWatcher) Start() {
 					return
 				}
 
-				log.Printf("raw event: %s, path: %s", event.Op.String(), event.Name)
+				// log.Printf("raw event: %s, path: %s", event.Op.String(), event.Name)
 				if event.Has(fsnotify.Create) {
 					fileInfo, err := os.Stat(event.Name)
 					if err != nil {
