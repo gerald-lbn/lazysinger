@@ -12,23 +12,12 @@ services:
     ports:
       - 6379:6379
 
-  watcher:
+  lazysinger:
+    user: "${UID}:${GID}"
     build:
       context: ../..
-      dockerfile: tooling/docker/watcher.Dockerfile
-    container_name: watcher
-    env_file:
-      - ../../.env.test
-    volumes:
-      - /home/gerald/Documents/Music:/music:ro
-    depends_on:
-      - redis
-
-  worker:
-    build:
-      context: ../..
-      dockerfile: tooling/docker/worker.Dockerfile
-    container_name: worker
+      dockerfile: tooling/docker/Dockerfile
+    container_name: lazysinger
     env_file:
       - ../../.env.test
     volumes:
