@@ -33,6 +33,11 @@ func HandleDownloadLyrics(ctx context.Context, t *asynq.Task) error {
 			return err
 		}
 
+		if results.Instrumental {
+			log.Printf("Track at %s is flagged as instrumental by the provider", p.Filepath)
+			return nil
+		}
+
 		if !metadata.HasSyncedLyrics {
 			log.Printf("Track at %s doesn't have synced lyrics stored locally", p.Filepath)
 			if results.SyncedLyrics != "" {
