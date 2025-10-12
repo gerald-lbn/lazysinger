@@ -129,13 +129,13 @@ func startWorkerServer() func() error {
 				Addr: cfg.RedisAddr,
 			},
 			asynq.Config{
-				Concurrency: 5,
+				Concurrency: cfg.WorkerConcurrency,
 				Queues: map[string]int{
 					queue.CRITICAL: 6,
 					queue.DEFAULT:  3,
 					queue.LOW:      1,
 				},
-				StrictPriority: true,
+				StrictPriority: cfg.WorkerStrictPriority,
 			},
 		)
 
