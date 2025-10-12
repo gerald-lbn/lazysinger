@@ -13,7 +13,6 @@ services:
       - 6379:6379
 
   lazysinger:
-    user: "${UID}:${GID}"
     build:
       context: ../..
       dockerfile: tooling/docker/Dockerfile

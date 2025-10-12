@@ -8,14 +8,10 @@ ENV GOARCH=amd64
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN go build -trimpath -ldflags="-s -w" -o lazysinger ./cmd
+RUN go build -o lazysinger ./cmd
 
 FROM base
 WORKDIR /app
-RUN addgroup --system appuser
-RUN adduser --system appuser
-COPY --from=builder --chown=appuser:appuser /app/lazysinger /app/lazysinger
+COPY --from=builder /app/lazysinger /app/lazysinger
 RUN chmod +x /app/lazysinger
-USER appuser
-
 ENTRYPOINT ["/app/lazysinger"]
