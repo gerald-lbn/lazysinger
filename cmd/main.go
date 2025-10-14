@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/gerald-lbn/lazysinger/internal/config"
+	"github.com/gerald-lbn/lazysinger/internal/log"
 	"github.com/gerald-lbn/lazysinger/internal/music"
 	"github.com/gerald-lbn/lazysinger/internal/queue"
 	"github.com/hibiken/asynq"
@@ -24,11 +24,15 @@ func main() {
 func runLazySinger(ctx context.Context) {
 	g, ctx := errgroup.WithContext(ctx)
 
+	cfg := config.LoadConfig()
+
+	log.SetLevelString(cfg.LogLevel)
+
 	g.Go(startWatcher())
 	g.Go(startWorkerServer())
 
 	if err := g.Wait(); err != nil {
-		log.Print("Fatal error in LazySinger. Aborting", err)
+		log.Error().Err(err).Msg("Fatal error in LazySinger. Aborting")
 	}
 }
 
@@ -54,12 +58,12 @@ func startWatcher() func() error {
 
 		watcher, err := music.NewLibraryWatcher(cfg.MusicLibraryPath)
 		if err != nil {
-			log.Fatalf("error creating scanner: %v", err)
+			log.Fatal().Err(err).Msg("error creating scanner")
 		}
 		defer watcher.Close()
 
 		watcher.HandleCreate = func(pathToFile string) error {
-			log.Printf("New file created: %s. Pushing it to queue", pathToFile)
+			log.Info().Str("path", pathToFile).Msg("New file created. Pushing it to queue")
 			task, err := queue.NewDownloadLyricsTask(pathToFile)
 			if err != nil {
 				return err
@@ -68,28 +72,28 @@ func startWatcher() func() error {
 			if err != nil {
 				return err
 			}
-			log.Printf("Job #%s created and pushed to queue '%s' to process %s", info.ID, info.Queue, pathToFile)
+			log.Info().Str("job_id", info.ID).Str("queue", info.Queue).Str("file", pathToFile).Msg("Job created and pushed to queue")
 			return nil
 		}
 
 		watcher.HandleDelete = func(pathToFile string) error {
-			log.Printf("File deleted: %s. Pushing it to queue", pathToFile)
+			log.Info().Str("path", pathToFile).Msg("File deleted. Pushing it to queue to delete lyrics")
 			task, err := queue.NewDeleteLyricsTask(pathToFile)
 			if err != nil {
 				return err
 			}
 			info, err := asynqClient.Enqueue(task, asynq.Queue(queue.CRITICAL))
-			log.Printf("Job #%s created and pushed to queue '%s' to process %s", info.ID, info.Queue, pathToFile)
+			log.Info().Str("job_id", info.ID).Str("queue", info.Queue).Str("file", pathToFile).Msg("Job created and pushed to queue")
 			return nil
 		}
 
 		watcher.HandleMove = func(pathToFile string) error {
-			log.Printf("Filed moved: %s.", pathToFile)
+			log.Info().Str("path", pathToFile).Msg("File moved. Pushing it to queue to download lyrics")
 			return nil
 		}
 
 		watcher.HandleRename = func(pathToFile string) error {
-			log.Printf("Filed renamed: %s", pathToFile)
+			log.Info().Str("path", pathToFile).Msg("File renamed. Pushing it to queue to download lyrics")
 			return nil
 		}
 
@@ -102,14 +106,14 @@ func startWatcher() func() error {
 			if err != nil {
 				return err
 			}
-			log.Printf("Job #%s created and pushed to queue '%s' to process %s", info.ID, info.Queue, pathToFile)
+			log.Info().Str("job_id", info.ID).Str("queue", info.Queue).Str("file", pathToFile).Msg("Job created and pushed to queue")
 			return nil
 		}
 
 		if err := watcher.InitialScan(); err != nil {
-			log.Fatalf("Initial scan failed: %v", err)
+			log.Fatal().Err(err).Msg("Initial scan failed")
 		} else {
-			log.Printf("Initial scan completed")
+			log.Debug().Msg("Initial scan successful")
 		}
 
 		watcher.Start()

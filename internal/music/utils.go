@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/gerald-lbn/lazysinger/internal/log"
 )
 
 const (
@@ -14,6 +16,7 @@ const (
 )
 
 func IsMusicFile(path string) bool {
+	log.Debug().Str("path", path).Msg("Checking if filepath points to a music file")
 	fi, err := os.Stat(path)
 	if err != nil {
 		return false

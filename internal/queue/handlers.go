@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 
+	"github.com/gerald-lbn/lazysinger/internal/log"
 	"github.com/gerald-lbn/lazysinger/internal/lyrics"
 	"github.com/gerald-lbn/lazysinger/internal/music"
 	"github.com/hibiken/asynq"
@@ -14,12 +14,14 @@ import (
 func HandleDownloadLyrics(ctx context.Context, t *asynq.Task) error {
 	var p LyricsDownloadPayload
 	if err := json.Unmarshal(t.Payload(), &p); err != nil {
-		return fmt.Errorf("Unable to json.Unmarshal task payload: %v: %w", err, asynq.SkipRetry)
+		returnError := fmt.Errorf("Unable to json.Unmarshal task payload: %v: %w", err, asynq.SkipRetry)
+		log.Error().Err(returnError).Interface("payload", p)
+		return returnError
 	}
 
 	metadata, err := music.ExtractMetadaFromMusicFile(p.Filepath)
 	if err != nil {
-		return fmt.Errorf("Unable to extract metadata: %v", err)
+		return err
 	}
 
 	if !metadata.HasBothLyrics() {
@@ -34,40 +36,38 @@ func HandleDownloadLyrics(ctx context.Context, t *asynq.Task) error {
 		}
 
 		if results.Instrumental {
-			log.Printf("Track at %s is flagged as instrumental by the provider", p.Filepath)
+			log.Info().Str("track", p.Filepath).Msg("The track is flagged as an instrumental track by the provider")
 			return nil
 		}
 
 		if !metadata.HasSyncedLyrics {
-			log.Printf("Track at %s doesn't have synced lyrics stored locally", p.Filepath)
+			log.Info().Str("track", p.Filepath).Msg("The track doesn't have synced lyrics stored locally")
 			if results.SyncedLyrics != "" {
-				log.Printf("Found synced lyrics for %s, saving them locally", p.Filepath)
+				log.Debug().Str("path", p.Filepath).Msg("Found synced lyrics, saving them locally.")
 				err := lyrics.DownloadLyrics(metadata.PathToSyncedLyrics, results.SyncedLyrics)
 				if err != nil {
-					log.Printf("An error occured while saving synced lyrics to %s: %v", metadata.PathToSyncedLyrics, err)
 					return err
 				}
-				log.Printf("Successfully saved synced lyrics at %s", metadata.PathToSyncedLyrics)
+				log.Info().Str("path", p.Filepath).Str("synced-lyrics_path", metadata.PathToSyncedLyrics).Msg("Successfully saved synced lyrics")
 			} else {
-				log.Printf("No synced lyrics found from provider for %s", p.Filepath)
+				log.Warn().Str("track", p.Filepath).Msg("No synced lyrics found from provider")
 			}
 		}
 		if !metadata.HasPlainLyrics {
-			log.Printf("Track at %s doesn't have plain lyrics stored locally", p.Filepath)
+			log.Info().Str("track", p.Filepath).Msg("The track doesn't have plain lyrics stored locally")
 			if results.PlainLyrics != "" {
-				log.Printf("Found plain lyrics for %s, saving them locally", p.Filepath)
+				log.Debug().Str("path", p.Filepath).Msg("Found plain lyrics, saving them locally")
 				err := lyrics.DownloadLyrics(metadata.PathToPlainLyrics, results.PlainLyrics)
 				if err != nil {
-					log.Printf("An error occured while saving plain lyrics to %s: %v", metadata.PathToPlainLyrics, err)
 					return err
 				}
-				log.Printf("Successfully saved plain lyrics at %s", metadata.PathToPlainLyrics)
+				log.Info().Str("track", p.Filepath).Str("plain_lyrics_path", metadata.PathToPlainLyrics).Msg("Successfully saved plain lyrics")
 			} else {
-				log.Printf("No plain lyrics found from provider for %s", p.Filepath)
+				log.Warn().Str("track", p.Filepath).Msg("No plain lyrics found from the provider")
 			}
 		}
 	} else {
-		log.Printf("Track at %s already has both lyrics stored locally", p.Filepath)
+		log.Info().Str("track", metadata.FilePath).Msg("The track already has both lyrics stored locally")
 	}
 
 	return nil
@@ -85,21 +85,21 @@ func HandleDeleteLyrics(ctx context.Context, t *asynq.Task) error {
 	}
 
 	if metadata.HasPlainLyrics {
-		log.Printf("Removing lyrics stored at %s", metadata.PathToPlainLyrics)
+		log.Debug().Str("lyrics", metadata.PathToPlainLyrics).Msg("Removing lyrics")
 		if err := lyrics.DeleteLyrics(metadata.PathToPlainLyrics); err != nil {
-			log.Printf("An error occured when deleting lyrics at %s: %v", metadata.PathToPlainLyrics, err)
+			log.Error().Err(err).Str("lyrics", metadata.PathToPlainLyrics).Msg("Unable to remove lyrics")
 			return err
 		}
-		log.Printf("Lyrics stored at %s removed", metadata.PathToPlainLyrics)
+		log.Info().Str("lyrics", metadata.PathToPlainLyrics).Msg("Lyrics removed")
 	}
 
 	if metadata.HasSyncedLyrics {
-		log.Printf("Removing lyrics stored at %s", metadata.PathToSyncedLyrics)
+		log.Debug().Str("lyrics", metadata.PathToPlainLyrics).Msg("Removing lyrics")
 		if err := lyrics.DeleteLyrics(metadata.PathToSyncedLyrics); err != nil {
-			log.Printf("An error occured when deleting lyrics at %s: %v", metadata.PathToSyncedLyrics, err)
+			log.Error().Err(err).Str("lyrics", metadata.PathToSyncedLyrics).Msg("Unable to remove lyrics")
 			return err
 		}
-		log.Printf("Lyrics stored at %s removed", metadata.PathToSyncedLyrics)
+		log.Info().Str("lyrics", metadata.PathToSyncedLyrics).Msg("Lyrics removed")
 	}
 
 	return nil

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/gerald-lbn/lazysinger/internal/log"
 	"github.com/hibiken/asynq"
 )
 
@@ -24,6 +25,7 @@ func NewDownloadLyricsTask(filepath string) (*asynq.Task, error) {
 		Filepath: filepath,
 	})
 	if err != nil {
+		log.Error().Err(err).Msg("An error occurred while marshaling the lyrics download task payload")
 		return nil, err
 	}
 
@@ -37,6 +39,7 @@ func NewDeleteLyricsTask(filepath string) (*asynq.Task, error) {
 		Filepath: filepath,
 	})
 	if err != nil {
+		log.Error().Err(err).Msg("An error occurred while marshaling the lyrics delete task payload")
 		return nil, err
 	}
 
