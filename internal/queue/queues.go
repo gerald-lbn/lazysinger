@@ -1,7 +1,7 @@
 package queue
 
 const (
-	CRITICAL = "critial"
+	CRITICAL = "critical"
 	DEFAULT  = "default"
 	LOW      = "low"
 )

@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/gerald-lbn/lazysinger/internal/log"
 )
 
 const (
@@ -62,13 +64,16 @@ func (lp *LyricsProvider) Get(parameters GetParameters) (LyricsResponse, error) 
 	if parameters.Duration != nil {
 		url += fmt.Sprintf("&duration=%d", *parameters.Duration)
 	}
+	log.Debug().Str("url", url).Msg("Requesting")
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
+		log.Error().Err(err).Str("url", url).Msg("An error occured when making the request")
 		return LyricsResponse{}, err
 	}
 
 	res, errReq := client.Do(req)
 	if errReq != nil {
+		log.Error().Err(errReq).Str("url", url).Msg("An error occured when requestingg url")
 		return LyricsResponse{}, errReq
 	}
 
@@ -78,14 +83,17 @@ func (lp *LyricsProvider) Get(parameters GetParameters) (LyricsResponse, error) 
 
 	body, errRead := io.ReadAll(res.Body)
 	if errRead != nil {
+		log.Error().Err(err).Msg("An error occured when reading body")
 		return LyricsResponse{}, errRead
 	}
 
 	// Handle bad response
 	if res.StatusCode != 200 {
+		log.Debug().Int("status_code", res.StatusCode).Msg("Received a response with a status code different from 200")
 		response := BadLyricsResponse{}
 		errJson := json.Unmarshal(body, &response)
 		if errJson != nil {
+			log.Error().Str("url", url).Bytes("body", body).Err(errJson).Msg("Unable to parse json against the schema")
 			return LyricsResponse{}, errJson
 		}
 
@@ -95,8 +103,10 @@ func (lp *LyricsProvider) Get(parameters GetParameters) (LyricsResponse, error) 
 	lyrics := LyricsResponse{}
 	errJson := json.Unmarshal(body, &lyrics)
 	if errJson != nil {
+		log.Error().Bytes("body", body).Err(errJson).Msg("Unable to parse json against the schema")
 		return LyricsResponse{}, errJson
 	}
 
+	log.Debug().Any("lyrics", lyrics).Msg("Lyrics fetch successfully")
 	return lyrics, nil
 }
