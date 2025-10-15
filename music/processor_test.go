@@ -3,7 +3,7 @@ package music_test
 import (
 	"os"
 
-	"github.com/gerald-lbn/lazysinger/internal/music"
+	"github.com/gerald-lbn/lazysinger/music"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
