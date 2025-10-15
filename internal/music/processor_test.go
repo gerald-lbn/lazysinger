@@ -1,8 +1,9 @@
-package lyrics
+package music_test
 
 import (
 	"os"
 
+	"github.com/gerald-lbn/lazysinger/internal/music"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -28,7 +29,7 @@ var _ = Describe("LyricsProcessor", func() {
 		It("should create a txt file with the lyrics", func() {
 			lyrics := "These are the test lyrics."
 
-			err := DownloadLyrics(txtFilePath, lyrics)
+			err := music.DownloadLyrics(txtFilePath, lyrics)
 			Expect(err).NotTo(HaveOccurred())
 
 			data, err := os.ReadFile(txtFilePath)
@@ -39,7 +40,7 @@ var _ = Describe("LyricsProcessor", func() {
 		It("should create a lrc file with the lyrics", func() {
 			lyrics := "[00:12.00]These are the test lyrics.\n[00:34.00]With timestamps."
 
-			err := DownloadLyrics(lrcFilePath, lyrics)
+			err := music.DownloadLyrics(lrcFilePath, lyrics)
 			Expect(err).NotTo(HaveOccurred())
 
 			data, err := os.ReadFile(lrcFilePath)
@@ -64,7 +65,7 @@ var _ = Describe("LyricsProcessor", func() {
 		})
 
 		It("should delete the txt file", func() {
-			err := DeleteLyrics(txtFilePath)
+			err := music.DeleteLyrics(txtFilePath)
 			Expect(err).NotTo(HaveOccurred())
 
 			_, err = os.Stat(txtFilePath)
@@ -72,7 +73,7 @@ var _ = Describe("LyricsProcessor", func() {
 		})
 
 		It("should delete the lrc file", func() {
-			err := DeleteLyrics(lrcFilePath)
+			err := music.DeleteLyrics(lrcFilePath)
 			Expect(err).NotTo(HaveOccurred())
 
 			_, err = os.Stat(lrcFilePath)
@@ -80,7 +81,7 @@ var _ = Describe("LyricsProcessor", func() {
 		})
 
 		It("should return an error when trying to delete a non-existent file", func() {
-			err := DeleteLyrics("non_existent_file.txt")
+			err := music.DeleteLyrics("non_existent_file.txt")
 			Expect(err).To(HaveOccurred())
 		})
 	})

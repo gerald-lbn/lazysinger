@@ -1,4 +1,4 @@
-package lyrics
+package music
 
 import (
 	"encoding/json"

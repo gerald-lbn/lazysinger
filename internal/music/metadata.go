@@ -22,8 +22,8 @@ type Metadata struct {
 }
 
 type LyricsPath struct {
-	plainLyrics  string
-	syncedLyrics string
+	PlainLyrics  string
+	SyncedLyrics string
 }
 
 func (m *Metadata) HasBothLyrics() bool {
@@ -48,8 +48,8 @@ func GetLyricsPathFromMusicFilePath(path string) LyricsPath {
 	dir := filepath.Dir(path)
 	fileNameWithoutExt := strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
 	lyricsPaths := LyricsPath{
-		plainLyrics:  filepath.Join(dir, fileNameWithoutExt+PLAIN_LYRICS_EXTENSION),
-		syncedLyrics: filepath.Join(dir, fileNameWithoutExt+SYNCED_LYRICS_EXTENSION),
+		PlainLyrics:  filepath.Join(dir, fileNameWithoutExt+PLAIN_LYRICS_EXTENSION),
+		SyncedLyrics: filepath.Join(dir, fileNameWithoutExt+SYNCED_LYRICS_EXTENSION),
 	}
 	log.Debug().Interface("lyrics_path", lyricsPaths)
 
@@ -71,9 +71,9 @@ func ExtractMetadaFromMusicFile(path string) (Metadata, error) {
 		TrackName:          metadata[taglib.Title][0],
 		ArtistName:         metadata[taglib.Artist][0],
 		AlbumName:          metadata[taglib.Album][0],
-		HasPlainLyrics:     CheckLyricsExistance(lyricsPath.plainLyrics),
-		PathToPlainLyrics:  lyricsPath.plainLyrics,
-		HasSyncedLyrics:    CheckLyricsExistance(lyricsPath.syncedLyrics),
-		PathToSyncedLyrics: lyricsPath.syncedLyrics,
+		HasPlainLyrics:     CheckLyricsExistance(lyricsPath.PlainLyrics),
+		PathToPlainLyrics:  lyricsPath.PlainLyrics,
+		HasSyncedLyrics:    CheckLyricsExistance(lyricsPath.SyncedLyrics),
+		PathToSyncedLyrics: lyricsPath.SyncedLyrics,
 	}, nil
 }

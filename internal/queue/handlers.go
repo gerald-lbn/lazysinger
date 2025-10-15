@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/gerald-lbn/lazysinger/internal/log"
-	"github.com/gerald-lbn/lazysinger/internal/lyrics"
 	"github.com/gerald-lbn/lazysinger/internal/music"
 	"github.com/hibiken/asynq"
 )
@@ -25,8 +24,8 @@ func HandleDownloadLyrics(ctx context.Context, t *asynq.Task) error {
 	}
 
 	if !metadata.HasBothLyrics() {
-		lyricsProvider := lyrics.NewLyricsProvider()
-		results, err := lyricsProvider.Get(lyrics.GetParameters{
+		lyricsProvider := music.NewLyricsProvider()
+		results, err := lyricsProvider.Get(music.GetParameters{
 			TrackName:  metadata.TrackName,
 			ArtistName: metadata.ArtistName,
 			AlbumName:  metadata.AlbumName,
@@ -44,7 +43,7 @@ func HandleDownloadLyrics(ctx context.Context, t *asynq.Task) error {
 			log.Info().Str("track", p.Filepath).Msg("The track doesn't have synced lyrics stored locally")
 			if results.SyncedLyrics != "" {
 				log.Debug().Str("path", p.Filepath).Msg("Found synced lyrics, saving them locally.")
-				err := lyrics.DownloadLyrics(metadata.PathToSyncedLyrics, results.SyncedLyrics)
+				err := music.DownloadLyrics(metadata.PathToSyncedLyrics, results.SyncedLyrics)
 				if err != nil {
 					return err
 				}
@@ -57,7 +56,7 @@ func HandleDownloadLyrics(ctx context.Context, t *asynq.Task) error {
 			log.Info().Str("track", p.Filepath).Msg("The track doesn't have plain lyrics stored locally")
 			if results.PlainLyrics != "" {
 				log.Debug().Str("path", p.Filepath).Msg("Found plain lyrics, saving them locally")
-				err := lyrics.DownloadLyrics(metadata.PathToPlainLyrics, results.PlainLyrics)
+				err := music.DownloadLyrics(metadata.PathToPlainLyrics, results.PlainLyrics)
 				if err != nil {
 					return err
 				}
