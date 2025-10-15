@@ -76,17 +76,6 @@ func startWatcher() func() error {
 			return nil
 		}
 
-		watcher.HandleDelete = func(pathToFile string) error {
-			log.Info().Str("path", pathToFile).Msg("File deleted. Pushing it to queue to delete lyrics")
-			task, err := queue.NewDeleteLyricsTask(pathToFile)
-			if err != nil {
-				return err
-			}
-			info, err := asynqClient.Enqueue(task, asynq.Queue(queue.CRITICAL))
-			log.Info().Str("job_id", info.ID).Str("queue", info.Queue).Str("file", pathToFile).Msg("Job created and pushed to queue")
-			return nil
-		}
-
 		watcher.HandleMove = func(pathToFile string) error {
 			log.Info().Str("path", pathToFile).Msg("File moved. Pushing it to queue to download lyrics")
 			return nil
