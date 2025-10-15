@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gerald-lbn/lazysinger/internal/log"
-	"github.com/gerald-lbn/lazysinger/internal/music"
+	"github.com/gerald-lbn/lazysinger/log"
+	"github.com/gerald-lbn/lazysinger/music"
 	"github.com/hibiken/asynq"
 )
 

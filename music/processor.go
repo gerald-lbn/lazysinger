@@ -3,7 +3,7 @@ package music
 import (
 	"os"
 
-	"github.com/gerald-lbn/lazysinger/internal/log"
+	"github.com/gerald-lbn/lazysinger/log"
 )
 
 type LyricsProcessor struct{}

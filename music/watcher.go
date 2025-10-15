@@ -7,7 +7,7 @@ import (
 	"slices"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/gerald-lbn/lazysinger/internal/log"
+	"github.com/gerald-lbn/lazysinger/log"
 )
 
 type LibraryWatcher struct {

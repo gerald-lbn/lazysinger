@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/gerald-lbn/lazysinger/internal/log"
+	"github.com/gerald-lbn/lazysinger/log"
 	"github.com/hibiken/asynq"
 )
 

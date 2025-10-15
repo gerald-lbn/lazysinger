@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gerald-lbn/lazysinger/internal/log"
+	"github.com/gerald-lbn/lazysinger/log"
 	"go.senan.xyz/taglib"
 )
 

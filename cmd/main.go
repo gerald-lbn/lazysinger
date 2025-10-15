@@ -6,10 +6,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/gerald-lbn/lazysinger/internal/config"
-	"github.com/gerald-lbn/lazysinger/internal/log"
-	"github.com/gerald-lbn/lazysinger/internal/music"
-	"github.com/gerald-lbn/lazysinger/internal/queue"
+	"github.com/gerald-lbn/lazysinger/config"
+	"github.com/gerald-lbn/lazysinger/log"
+	"github.com/gerald-lbn/lazysinger/music"
+	"github.com/gerald-lbn/lazysinger/queue"
 	"github.com/hibiken/asynq"
 	"golang.org/x/sync/errgroup"
 )

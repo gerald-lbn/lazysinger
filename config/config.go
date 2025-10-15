@@ -4,7 +4,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/gerald-lbn/lazysinger/internal/log"
+	"github.com/gerald-lbn/lazysinger/log"
 
 	"github.com/joho/godotenv"
 )
