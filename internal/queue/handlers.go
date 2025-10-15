@@ -72,35 +72,3 @@ func HandleDownloadLyrics(ctx context.Context, t *asynq.Task) error {
 
 	return nil
 }
-
-func HandleDeleteLyrics(ctx context.Context, t *asynq.Task) error {
-	var p LyricsDeletePayload
-	if err := json.Unmarshal(t.Payload(), &p); err != nil {
-		return fmt.Errorf("Unable to json.Unmarshal task payload: %v: %w", err, asynq.SkipRetry)
-	}
-
-	metadata, err := music.ExtractMetadaFromMusicFile(p.Filepath)
-	if err != nil {
-		return fmt.Errorf("Unable to extract metadata: %v", err)
-	}
-
-	if metadata.HasPlainLyrics {
-		log.Debug().Str("lyrics", metadata.PathToPlainLyrics).Msg("Removing lyrics")
-		if err := lyrics.DeleteLyrics(metadata.PathToPlainLyrics); err != nil {
-			log.Error().Err(err).Str("lyrics", metadata.PathToPlainLyrics).Msg("Unable to remove lyrics")
-			return err
-		}
-		log.Info().Str("lyrics", metadata.PathToPlainLyrics).Msg("Lyrics removed")
-	}
-
-	if metadata.HasSyncedLyrics {
-		log.Debug().Str("lyrics", metadata.PathToPlainLyrics).Msg("Removing lyrics")
-		if err := lyrics.DeleteLyrics(metadata.PathToSyncedLyrics); err != nil {
-			log.Error().Err(err).Str("lyrics", metadata.PathToSyncedLyrics).Msg("Unable to remove lyrics")
-			return err
-		}
-		log.Info().Str("lyrics", metadata.PathToSyncedLyrics).Msg("Lyrics removed")
-	}
-
-	return nil
-}
