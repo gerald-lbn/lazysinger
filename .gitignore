@@ -35,3 +35,6 @@ go.work.sum
 # Environment files
 .env.*
 .env
+
+# Local database
+*.db
