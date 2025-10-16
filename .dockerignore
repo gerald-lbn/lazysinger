@@ -38,3 +38,6 @@ go.work.sum
 
 # Tests
 *_test.go
+
+# Local database
+*.db
