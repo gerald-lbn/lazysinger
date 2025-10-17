@@ -10,6 +10,7 @@ type Track struct {
 	Album           string    `gorm:"not null"`
 	HasPlainLyrics  bool      `gorm:"default:false"`
 	HasSyncedLyrics bool      `gorm:"default:false"`
+	IsInstrumental  bool      `gorm:"default:false"`
 	CreatedAt       time.Time `gorm:"autoCreateTime"`
 	UpdatedAt       time.Time `gorm:"autoUpdateTime"`
 }
