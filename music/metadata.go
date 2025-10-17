@@ -30,7 +30,7 @@ func (m *Metadata) HasBothLyrics() bool {
 	return m.HasPlainLyrics && m.HasSyncedLyrics
 }
 
-func CheckLyricsExistance(path string) bool {
+func CheckFileExistance(path string) bool {
 	_, err := os.Stat(path)
 	if errors.Is(err, os.ErrNotExist) {
 		log.Debug().Str("path", path).Msg("Lyrics file does not exist")
@@ -71,9 +71,9 @@ func ExtractMetadaFromMusicFile(path string) (Metadata, error) {
 		TrackName:          metadata[taglib.Title][0],
 		ArtistName:         metadata[taglib.Artist][0],
 		AlbumName:          metadata[taglib.Album][0],
-		HasPlainLyrics:     CheckLyricsExistance(lyricsPath.PlainLyrics),
+		HasPlainLyrics:     CheckFileExistance(lyricsPath.PlainLyrics),
 		PathToPlainLyrics:  lyricsPath.PlainLyrics,
-		HasSyncedLyrics:    CheckLyricsExistance(lyricsPath.SyncedLyrics),
+		HasSyncedLyrics:    CheckFileExistance(lyricsPath.SyncedLyrics),
 		PathToSyncedLyrics: lyricsPath.SyncedLyrics,
 	}, nil
 }

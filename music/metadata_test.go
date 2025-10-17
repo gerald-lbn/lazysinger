@@ -50,9 +50,9 @@ var _ = Describe("Metadata", func() {
 				PlainLyrics:  BAD_OMENS_IMPOSE_PLAIN_LYRICS,
 				SyncedLyrics: BAD_OMENS_IMPOSE_SYNCED_LYRICS,
 			}
-			hasPlain := music.CheckLyricsExistance(lyricsPath.PlainLyrics)
+			hasPlain := music.CheckFileExistance(lyricsPath.PlainLyrics)
 			Expect(hasPlain).To(BeTrue())
-			hasSynced := music.CheckLyricsExistance(lyricsPath.SyncedLyrics)
+			hasSynced := music.CheckFileExistance(lyricsPath.SyncedLyrics)
 			Expect(hasSynced).To(BeTrue())
 		})
 	})
