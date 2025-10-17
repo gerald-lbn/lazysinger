@@ -89,6 +89,12 @@ var _ = Describe("TrackRepository", func() {
 			Expect(result.Result.Name).To(Equal(testTrack.Name))
 		})
 
+		It("should find all existing tracks", func() {
+			result := repository.FindAll()
+			Expect(result.Error).NotTo(HaveOccurred())
+			Expect(len(result.Result)).To(BeNumerically("==", 1))
+		})
+
 		It("should return error when track not found", func() {
 			result := repository.FindByFilePath("/nonexistent/path.mp3")
 			Expect(result.Error).To(HaveOccurred())

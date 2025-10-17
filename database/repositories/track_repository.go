@@ -28,6 +28,17 @@ func (r *TrackRepository) Create(track models.Track) RepositoryResult[models.Tra
 	return RepositoryResult[models.Track]{Result: track, Error: err}
 }
 
+func (r *TrackRepository) FindAll() RepositoryResult[[]models.Track] {
+	log.Debug().Msg("Finding all tracks ordered by filepath")
+	tracks, err := gorm.G[models.Track](r.db).Select("*").Order("file_path").Find(r.ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to find all tracks")
+	} else {
+		log.Debug().Int("count", len(tracks)).Msg("Found all tracks")
+	}
+	return RepositoryResult[[]models.Track]{Result: tracks, Error: err}
+}
+
 func (r *TrackRepository) FindByFilePath(filepath string) RepositoryResult[models.Track] {
 	log.Debug().Str("filepath", filepath).Msg("Finding track by filepath")
 	track, err := gorm.G[models.Track](r.db).Where("file_path = ?", filepath).First(r.ctx)
