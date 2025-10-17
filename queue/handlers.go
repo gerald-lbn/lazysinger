@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/gerald-lbn/lazysinger/config"
+	"github.com/gerald-lbn/lazysinger/database"
+	repositories "github.com/gerald-lbn/lazysinger/database/repositories"
 	"github.com/gerald-lbn/lazysinger/log"
 	"github.com/gerald-lbn/lazysinger/music"
 	"github.com/hibiken/asynq"
@@ -14,7 +17,7 @@ func HandleDownloadLyrics(ctx context.Context, t *asynq.Task) error {
 	var p LyricsDownloadPayload
 	if err := json.Unmarshal(t.Payload(), &p); err != nil {
 		returnError := fmt.Errorf("Unable to json.Unmarshal task payload: %v: %w", err, asynq.SkipRetry)
-		log.Error().Err(returnError).Interface("payload", p)
+		log.Error().Err(err).Interface("payload", p)
 		return returnError
 	}
 
@@ -68,6 +71,32 @@ func HandleDownloadLyrics(ctx context.Context, t *asynq.Task) error {
 	} else {
 		log.Info().Str("track", metadata.FilePath).Msg("The track already has both lyrics stored locally")
 	}
+
+	return nil
+}
+
+func HandleRemoveTrackFromDB(ctx context.Context, t *asynq.Task) error {
+	var p TrackRemoveFromDBPayload
+	if err := json.Unmarshal(t.Payload(), &p); err != nil {
+		returnError := fmt.Errorf("Unable to json.Unmarshal task payload: %v: %w", err, asynq.SkipRetry)
+		log.Error().Err(err).Interface("payload", p)
+		return returnError
+	}
+
+	cfg := config.LoadConfig()
+	db, err := database.Open(cfg.DatabaseUrl)
+	if err != nil {
+		log.Error().Str("path", p.Filepath).Err(err).Msg("Unable to remove track from database")
+	}
+
+	trackRepository := repositories.NewTrackRepository(db, ctx)
+	result := trackRepository.DeleteByFilePath(p.Filepath)
+	if result.Error != nil {
+		log.Error().Str("path", p.Filepath).Err(result.Error).Msg("Unable to remove track from databas")
+		return result.Error
+	}
+
+	log.Debug().Str("path", p.Filepath).Msg("Successfully removed track entry from the database")
 
 	return nil
 }

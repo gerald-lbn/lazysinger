@@ -10,7 +10,8 @@ import (
 
 // A list of task types
 const (
-	TypeLyricsDownload = "lyrics:download"
+	TypeLyricsDownload    = "lyrics:download"
+	TypeTrackRemoveFromDB = "database:remove:track"
 )
 
 // Task payload
@@ -18,16 +19,30 @@ type LyricsDownloadPayload struct {
 	Filepath string
 }
 
+type TrackRemoveFromDBPayload = LyricsDownloadPayload
+
 func NewDownloadLyricsTask(filepath string) (*asynq.Task, error) {
 	payload, err := json.Marshal(LyricsDownloadPayload{
 		Filepath: filepath,
 	})
 	if err != nil {
-		log.Error().Err(err).Msg("An error occurred while marshaling the lyrics download task payload")
+		log.Error().Err(err).Msg("An error occurred while marshaling the 'LyricsDownloadPayload' payload")
 		return nil, err
 	}
 
 	// Let times for the lyrics (.lrc and .txt) to be present on the filesystem.
 	// Prevent false-negative local lyrics detection
 	return asynq.NewTask(TypeLyricsDownload, payload, asynq.ProcessIn(10*time.Second)), nil
+}
+
+func NewRemoveTrackFromDB(filepath string) (*asynq.Task, error) {
+	payload, err := json.Marshal(TrackRemoveFromDBPayload{
+		Filepath: filepath,
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("An error occured while marshalling the 'TrackRemoveFromDBPayload' payload")
+		return nil, err
+	}
+
+	return asynq.NewTask(TypeTrackRemoveFromDB, payload), nil
 }
