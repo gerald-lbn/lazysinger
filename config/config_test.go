@@ -4,33 +4,50 @@ import (
 	"os"
 	"testing"
 
+	"github.com/gerald-lbn/lazysinger/log"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
 func TestConfig(t *testing.T) {
+	log.SetLevel(log.FatalLevel)
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Config Suite")
 }
 
 var _ = Describe("Config", func() {
-	Context("When retrieving environment variables", func() {
-		It("should return the default value if the env variable is not set", func() {
-			value := GetEnvWithDefault(MUSIC_LIBRARY_PATH, DEFAULT_MUSIC_LIBRARY_PATH)
-			Expect(value).To(Equal(DEFAULT_MUSIC_LIBRARY_PATH))
+	BeforeEach(func() {
+		// Clear environment variables
+		os.Unsetenv(LOG_LEVEL)
+		os.Unsetenv(MUSIC_LIBRARY)
+		os.Unsetenv(SCHEDULE)
+		os.Unsetenv(WORKER_CONCURRENCY)
+		os.Unsetenv(REDIS_ADDR)
+
+		// Reset config to clean state
+		ResetConfig()
+	})
+
+	Context("LoadWithDefault", func() {
+		When("environment variable is not set", func() {
+			It("returns the default value", func() {
+				result := LoadWithDefault("NONEXISTENT_VAR", "default_value")
+				Expect(result).To(Equal("default_value"))
+			})
 		})
 
-		It("should return the env variable value if it is set", func() {
-			// Set an environment variable for testing
-			expectedValue := "/custom/music/path"
-			_ = os.Setenv(MUSIC_LIBRARY_PATH, expectedValue)
+		When("environment variable is set", func() {
+			It("returns the environment value", func() {
+				os.Setenv(LOG_LEVEL, "debug")
+				result := LoadWithDefault(LOG_LEVEL, DEFAULT_LOG_LEVEL)
+				Expect(result).To(Equal("debug"))
+			})
 
-			value := GetEnv(MUSIC_LIBRARY_PATH)
-			Expect(value).To(Equal(expectedValue))
-		})
-
-		It("should return an error if the env variable is not set and no default is provided", func() {
-			GetEnv(MUSIC_LIBRARY_PATH)
+			It("returns empty string when env var is empty", func() {
+				os.Setenv(LOG_LEVEL, "")
+				result := LoadWithDefault(LOG_LEVEL, DEFAULT_LOG_LEVEL)
+				Expect(result).To(Equal(""))
+			})
 		})
 	})
 })

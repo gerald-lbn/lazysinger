@@ -1,4 +1,4 @@
-package music_test
+package singleton_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestMetadata(t *testing.T) {
+func TestSingleton(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Music Suite")
+	RunSpecs(t, "Singleton Suite")
 }

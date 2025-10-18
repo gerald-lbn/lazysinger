@@ -50,7 +50,7 @@ type GetParameters struct {
 	Duration   *int
 }
 
-func (lp *LyricsProvider) Get(parameters GetParameters) (LyricsResponse, error) {
+func (lp *LyricsProvider) Get(parameters GetParameters) (*LyricsResponse, error) {
 	client := http.Client{}
 
 	trackName := strings.ReplaceAll(parameters.TrackName, " ", "+")
@@ -68,13 +68,13 @@ func (lp *LyricsProvider) Get(parameters GetParameters) (LyricsResponse, error) 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Error().Err(err).Str("url", url).Msg("An error occured when making the request")
-		return LyricsResponse{}, err
+		return nil, err
 	}
 
 	res, errReq := client.Do(req)
 	if errReq != nil {
 		log.Error().Err(errReq).Str("url", url).Msg("An error occured when requestingg url")
-		return LyricsResponse{}, errReq
+		return nil, errReq
 	}
 
 	if res.Body != nil {
@@ -83,30 +83,30 @@ func (lp *LyricsProvider) Get(parameters GetParameters) (LyricsResponse, error) 
 
 	body, errRead := io.ReadAll(res.Body)
 	if errRead != nil {
-		log.Error().Err(err).Msg("An error occured when reading body")
-		return LyricsResponse{}, errRead
+		log.Error().Err(err).Str("url", url).Msg("An error occured when reading body")
+		return nil, errRead
 	}
 
 	// Handle bad response
 	if res.StatusCode != 200 {
-		log.Debug().Int("status_code", res.StatusCode).Msg("Received a response with a status code different from 200")
+		log.Debug().Int("status_code", res.StatusCode).Str("url", url).Msg("Received a response with a status code different from 200")
 		response := BadLyricsResponse{}
 		errJson := json.Unmarshal(body, &response)
 		if errJson != nil {
-			log.Error().Str("url", url).Bytes("body", body).Err(errJson).Msg("Unable to parse json against the schema")
-			return LyricsResponse{}, errJson
+			log.Error().Str("url", url).Str("url", url).Bytes("body", body).Err(errJson).Msg("Unable to parse json against the schema")
+			return nil, errJson
 		}
 
-		return LyricsResponse{}, fmt.Errorf("[%s] %s (Status code: %d)", response.Name, response.Message, response.Code)
+		return nil, fmt.Errorf("[%s] %s (Status code: %d)", response.Name, response.Message, response.Code)
 	}
 
 	lyrics := LyricsResponse{}
 	errJson := json.Unmarshal(body, &lyrics)
 	if errJson != nil {
 		log.Error().Bytes("body", body).Err(errJson).Msg("Unable to parse json against the schema")
-		return LyricsResponse{}, errJson
+		return nil, errJson
 	}
 
 	log.Debug().Any("lyrics", lyrics).Msg("Lyrics fetch successfully")
-	return lyrics, nil
+	return &lyrics, nil
 }

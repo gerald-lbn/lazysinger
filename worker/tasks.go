@@ -1,4 +1,4 @@
-package queue
+package worker
 
 import (
 	"encoding/json"
@@ -18,12 +18,12 @@ type LyricsDownloadPayload struct {
 	Filepath string
 }
 
-func NewDownloadLyricsTask(filepath string) (*asynq.Task, error) {
+func NewDownloadLyricsTaskHandler(filepath string) (*asynq.Task, error) {
 	payload, err := json.Marshal(LyricsDownloadPayload{
 		Filepath: filepath,
 	})
 	if err != nil {
-		log.Error().Err(err).Msg("An error occurred while marshaling the lyrics download task payload")
+		log.Error().Err(err).Msg("An error occurred while marshaling the 'LyricsDownloadPayload' payload")
 		return nil, err
 	}
 

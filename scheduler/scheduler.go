@@ -3,6 +3,7 @@ package scheduler
 import (
 	"context"
 
+	"github.com/gerald-lbn/lazysinger/singleton"
 	"github.com/robfig/cron/v3"
 )
 
@@ -12,10 +13,13 @@ type Scheduler interface {
 	RemoveJob(id int)
 }
 
-func NewScheduler() Scheduler {
-	return &scheduler{
-		cron: cron.New(cron.WithSeconds()),
-	}
+func GetInstance() Scheduler {
+	return singleton.GetInstance(func() *scheduler {
+		c := cron.New(cron.WithLogger(&logger{}))
+		return &scheduler{
+			cron: c,
+		}
+	})
 }
 
 type scheduler struct {

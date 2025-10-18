@@ -25,6 +25,10 @@ func GetLevel() zerolog.Level {
 	return zerolog.GlobalLevel()
 }
 
+func SetLevel(l zerolog.Level) {
+	zerolog.SetGlobalLevel(l)
+}
+
 func SetLevelString(l string) {
 	level := levelFromString(l)
 	zerolog.SetGlobalLevel(level)
