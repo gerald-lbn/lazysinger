@@ -49,7 +49,6 @@ var (
 // or a default value if not set.
 func LoadWithDefault(key string, defaultValue string) string {
 	val, present := os.LookupEnv(key)
-	log.Debug().Str("key", key).Str("val", val).Str("default", defaultValue).Send()
 	if !present {
 		return defaultValue
 	}
