@@ -12,15 +12,12 @@ services:
     ports:
       - 6379:6379
 
-  lazysinger:
-    build:
-      context: ../..
-      dockerfile: tooling/docker/Dockerfile
-    container_name: lazysinger
-    env_file:
-      - ../../.env.test
-    volumes:
-      - /home/gerald/Documents/Music:/music
+  asynqmon:
+    image: hibiken/asynqmon
+    environment:
+      REDIS_ADDR: redis:6379
+    ports:
+      - 8080:8080
     depends_on:
       - redis
 
