@@ -73,7 +73,7 @@ func (lp *LyricsProvider) Get(parameters GetParameters) (*LyricsResponse, error)
 
 	res, errReq := client.Do(req)
 	if errReq != nil {
-		log.Error().Err(errReq).Str("url", url).Msg("An error occured when requestingg url")
+		log.Error().Err(errReq).Str("url", url).Msg("An error occured when requesting url")
 		return nil, errReq
 	}
 
