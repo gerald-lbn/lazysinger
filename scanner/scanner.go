@@ -34,7 +34,7 @@ func ScanAll(ctx context.Context) error {
 
 			taskInfo, err := asynqClient.Enqueue(task, asynq.TaskID(path))
 			switch {
-			case errors.Is(err, asynq.ErrDuplicateTask):
+			case errors.Is(err, asynq.ErrTaskIDConflict), errors.Is(err, asynq.ErrDuplicateTask):
 				{
 					log.Warn().Err(err).Msg("This track already has a task in queue, skipping...")
 				}
@@ -43,8 +43,11 @@ func ScanAll(ctx context.Context) error {
 					log.Error().Err(err).Str("path", path).Msg("Unable to enqueue download task")
 					return err
 				}
+			default:
+				{
+					log.Info().Str("path", path).Str("task_id", taskInfo.ID).Msg("Task pushed to queue")
+				}
 			}
-			log.Info().Str("path", path).Str("task_id", taskInfo.ID).Msg("Task pushed to queue")
 		}
 
 		return nil
