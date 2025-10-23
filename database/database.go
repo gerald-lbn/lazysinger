@@ -7,19 +7,13 @@ import (
 
 	"github.com/gerald-lbn/lazysinger/config"
 	"github.com/gerald-lbn/lazysinger/log"
-	"github.com/gerald-lbn/lazysinger/singleton"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
-// GetInstance returns a singleton instance of the database connection
-func GetInstance() *gorm.DB {
-	return singleton.GetInstance(connect)
-}
-
-// connect establishes a new database connection
-func connect() *gorm.DB {
+// Connect establishes a new database connection
+func Connect() *gorm.DB {
 	// Create database directory if it doesn't exist
 	dbDir := filepath.Join(config.Server.General.DataPath)
 	if err := ensureDir(dbDir); err != nil {
@@ -68,8 +62,7 @@ func connect() *gorm.DB {
 }
 
 // Close closes the database connection
-func Close() error {
-	db := GetInstance()
+func Close(db *gorm.DB) error {
 	if db != nil {
 		sqlDB, err := db.DB()
 		if err != nil {
