@@ -22,15 +22,15 @@ func Connect() *gorm.DB {
 	}
 
 	dbPath := filepath.Join(dbDir, config.Server.General.DatabaseName)
-	log.Info().Str("path", dbPath).Msg("Opening database")
 
 	gormConfig := &gorm.Config{
 		Logger: logger.Default.LogMode(logLevel()),
 	}
 
+	log.Info().Str("path", dbPath).Msg("Opening database")
 	db, err := gorm.Open(sqlite.Open(dbPath), gormConfig)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to open database")
+		log.Fatal().Err(err).Str("path", dbPath).Msg("Failed to open database")
 		return nil
 	}
 
