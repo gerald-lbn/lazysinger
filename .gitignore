@@ -38,3 +38,6 @@ go.work.sum
 
 # Local database
 *.db
+
+# Binded docker volumes
+data

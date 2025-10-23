@@ -4,7 +4,7 @@ services:
   redis:
     container_name: redis
     env_file:
-      - ../../.env.test
+      - .env
     image: "redis:8.2.1"
     command: "redis-server --save 20 1 --loglevel warning"
     volumes:
@@ -20,6 +20,14 @@ services:
       - 8080:8080
     depends_on:
       - redis
+
+  studio:
+    image: frectonz/sql-studio
+    ports:
+      - 3030:3030
+    volumes:
+      - ./data:/data
+    command: /bin/sql-studio --no-browser --no-shutdown --address=0.0.0.0:3030 sqlite /data/lazysinger.db
 
 volumes:
   redis_data:
