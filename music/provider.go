@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
+	"net/url"
 
 	"github.com/gerald-lbn/lazysinger/log"
 )
@@ -19,6 +19,7 @@ type LyricsProvider struct {
 
 type LyricsResponse struct {
 	ID           int     `json:"id"`
+	Name         string  `json:"name"`
 	TrackName    string  `json:"trackName"`
 	ArtistName   string  `json:"artistName"`
 	AlbumName    string  `json:"albumName"`
@@ -53,9 +54,9 @@ type GetParameters struct {
 func (lp *LyricsProvider) Get(parameters GetParameters) (*LyricsResponse, error) {
 	client := http.Client{}
 
-	trackName := strings.ReplaceAll(parameters.TrackName, " ", "+")
-	artistName := strings.ReplaceAll(parameters.ArtistName, " ", "+")
-	albumName := strings.ReplaceAll(parameters.AlbumName, " ", "+")
+	trackName := url.QueryEscape(parameters.TrackName)
+	artistName := url.QueryEscape(parameters.ArtistName)
+	albumName := url.QueryEscape(parameters.AlbumName)
 
 	url := fmt.Sprintf("%s/get?artist_name=%s&track_name=%s", lrcLibBaseURl, artistName, trackName)
 	if albumName != "" {
@@ -73,7 +74,7 @@ func (lp *LyricsProvider) Get(parameters GetParameters) (*LyricsResponse, error)
 
 	res, errReq := client.Do(req)
 	if errReq != nil {
-		log.Error().Err(errReq).Str("url", url).Msg("An error occured when requestingg url")
+		log.Error().Err(errReq).Str("url", url).Msg("An error occured when requesting url")
 		return nil, errReq
 	}
 
@@ -93,11 +94,11 @@ func (lp *LyricsProvider) Get(parameters GetParameters) (*LyricsResponse, error)
 		response := BadLyricsResponse{}
 		errJson := json.Unmarshal(body, &response)
 		if errJson != nil {
-			log.Error().Str("url", url).Str("url", url).Bytes("body", body).Err(errJson).Msg("Unable to parse json against the schema")
+			log.Error().Str("url", url).Bytes("body", body).Err(errJson).Msg("Unable to parse json against the schema")
 			return nil, errJson
 		}
 
-		return nil, fmt.Errorf("[%s] %s (Status code: %d)", response.Name, response.Message, response.Code)
+		return nil, fmt.Errorf("[%s] %s (Status code: %d)", response.Name, response.Message, res.StatusCode)
 	}
 
 	lyrics := LyricsResponse{}
