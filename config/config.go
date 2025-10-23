@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"os"
 	"strconv"
 
@@ -8,9 +9,15 @@ import (
 )
 
 type configOptions struct {
+	General generalOptions
 	Logger  loggerOptions
 	Scanner scannerOptions
 	Worker  workerOptions
+}
+
+type generalOptions struct {
+	DataPath     string
+	DatabaseName string
 }
 
 type loggerOptions struct {
@@ -29,6 +36,8 @@ type workerOptions struct {
 
 var (
 	// Environement keys
+	DATA_PATH          = "DATA_PATH"
+	DATABASE_NAME      = "DATABASE_NAME"
 	LOG_LEVEL          = "LOG_LEVEL"
 	MUSIC_LIBRARY      = "MUSIC_LIBRARY"
 	REDIS_ADDR         = "REDIS_ADDR"
@@ -36,6 +45,8 @@ var (
 	WORKER_CONCURRENCY = "WORKER_CONCURRENCY"
 
 	// Default environment keys
+	DEFAULT_DATA_PATH          = "/data"
+	DEFAULT_DATABASE_NAME      = "lazysinger.db"
 	DEFAULT_LOG_LEVEL          = "info"
 	DEFAULT_MUSIC_LIBRARY      = "/music"
 	DEFAULT_REDIS_ADDR         = "localhost:6379"
@@ -66,13 +77,21 @@ func Setup() error {
 
 	c := LoadWithDefault(WORKER_CONCURRENCY, DEFAULT_WORKER_CONCURRENCY)
 	i, err := strconv.Atoi(c)
-	if err != nil || i <= 0 {
-		log.Fatal().Err(err).Str("key", WORKER_CONCURRENCY).Str("value", c).Msg("Invalid value for environement key")
+	if err != nil {
+		log.Error().Err(err).Str("key", WORKER_CONCURRENCY).Str("value", c).Msg("Invalid value for environement key")
+		return err
+	}
+	if i <= 0 {
+		err := errors.New("Number of workers must be positive")
+		log.Error().Err(err).Str("key", WORKER_CONCURRENCY).Str("value", c).Msg("Invalid value for environement key")
 		return err
 	}
 
 	Server.Worker.Concurrency = i
 	Server.Worker.RedisAddr = LoadWithDefault(REDIS_ADDR, DEFAULT_REDIS_ADDR)
+
+	Server.General.DataPath = LoadWithDefault(DATA_PATH, DEFAULT_DATA_PATH)
+	Server.General.DatabaseName = LoadWithDefault(DATABASE_NAME, DEFAULT_DATABASE_NAME)
 
 	return nil
 }
