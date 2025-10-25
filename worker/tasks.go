@@ -10,8 +10,8 @@ import (
 
 // A list of task types
 const (
-	TypeLyricsDownload  = "lyrics:download"
-	TypeDatabaseCleanUp = "database:clean"
+	TypeLyricsDownload = "lyrics:download"
+	TypeDatabasePurge  = "database:purge"
 )
 
 // Task payload
@@ -34,5 +34,5 @@ func NewDownloadLyricsTaskHandler(filepath string) (*asynq.Task, error) {
 }
 
 func NewDatabaseCleanUp() (*asynq.Task, error) {
-	return asynq.NewTask(TypeDatabaseCleanUp, nil, asynq.MaxRetry(1)), nil
+	return asynq.NewTask(TypeDatabasePurge, nil, asynq.MaxRetry(1)), nil
 }
