@@ -21,9 +21,10 @@ var _ = Describe("Config", func() {
 		// Clear environment variables
 		os.Unsetenv(DATA_PATH)
 		os.Unsetenv(DATABASE_NAME)
+		os.Unsetenv(DATABASE_PURGE_SCHEDULE)
 		os.Unsetenv(LOG_LEVEL)
 		os.Unsetenv(MUSIC_LIBRARY)
-		os.Unsetenv(SCHEDULE)
+		os.Unsetenv(SCANNING_SCHEDULE)
 		os.Unsetenv(WORKER_CONCURRENCY)
 		os.Unsetenv(REDIS_ADDR)
 
@@ -62,7 +63,8 @@ var _ = Describe("Config", func() {
 
 			It("sets default general options", func() {
 				Expect(Server.General.DataPath).To(Equal(DEFAULT_DATA_PATH))
-				Expect(Server.General.DatabaseName).To(Equal(DEFAULT_DATABASE_NAME))
+				Expect(Server.Database.Name).To(Equal(DEFAULT_DATABASE_NAME))
+				Expect(Server.Database.PurgeSchedule).To(Equal(DEFAULT_DATABASE_PURGE_SCHEDULE))
 			})
 
 			It("sets default logger options", func() {
@@ -71,7 +73,7 @@ var _ = Describe("Config", func() {
 
 			It("sets default scanner options", func() {
 				Expect(Server.Scanner.Directory).To(Equal(DEFAULT_MUSIC_LIBRARY))
-				Expect(Server.Scanner.Schedule).To(Equal(DEFAULT_SCHEDULE))
+				Expect(Server.Scanner.Schedule).To(Equal(DEFAULT_SCANNING_SCHEDULE))
 			})
 
 			It("sets default worker options", func() {
@@ -84,9 +86,10 @@ var _ = Describe("Config", func() {
 			BeforeEach(func() {
 				os.Setenv(DATA_PATH, "/custom/data")
 				os.Setenv(DATABASE_NAME, "custom.db")
+				os.Setenv(DATABASE_PURGE_SCHEDULE, "0 */1 * * *")
 				os.Setenv(LOG_LEVEL, "debug")
 				os.Setenv(MUSIC_LIBRARY, "/custom/music")
-				os.Setenv(SCHEDULE, "*/30 * * * *")
+				os.Setenv(SCANNING_SCHEDULE, "*/30 * * * *")
 				os.Setenv(WORKER_CONCURRENCY, "4")
 				os.Setenv(REDIS_ADDR, "redis:6379")
 				Expect(Setup()).To(Succeed())
@@ -94,7 +97,8 @@ var _ = Describe("Config", func() {
 
 			It("uses environment values for general options", func() {
 				Expect(Server.General.DataPath).To(Equal("/custom/data"))
-				Expect(Server.General.DatabaseName).To(Equal("custom.db"))
+				Expect(Server.Database.Name).To(Equal("custom.db"))            // Updated struct field
+				Expect(Server.Database.PurgeSchedule).To(Equal("0 */1 * * *")) // Assert new purge schedule
 			})
 
 			It("uses environment values for logger options", func() {
@@ -134,19 +138,24 @@ var _ = Describe("Config", func() {
 
 	Context("ResetConfig", func() {
 		When("Some values are set", func() {
-			Server.General.DataPath = "/custom/data"
-			Server.General.DatabaseName = "custom.db"
-			Server.Logger.Level = "debug"
-			Server.Scanner.Directory = "/custom/music"
-			Server.Scanner.Schedule = "*/30 * * * *"
-			Server.Worker.Concurrency = 4
-			Server.Worker.RedisAddr = "redis:6379"
+			// Set values in a BeforeEach to ensure they are reset before each test in this context
+			BeforeEach(func() {
+				Server.General.DataPath = "/custom/data"
+				Server.Database.Name = "custom.db"            // Updated struct field
+				Server.Database.PurgeSchedule = "0 */1 * * *" // New database option
+				Server.Logger.Level = "debug"
+				Server.Scanner.Directory = "/custom/music"
+				Server.Scanner.Schedule = "*/30 * * * *"
+				Server.Worker.Concurrency = 4
+				Server.Worker.RedisAddr = "redis:6379"
+			})
 
 			It("resets all configuration values", func() {
 				ResetConfig()
 
 				Expect(Server.General.DataPath).To(BeEmpty())
-				Expect(Server.General.DatabaseName).To(BeEmpty())
+				Expect(Server.Database.Name).To(BeEmpty())          // Updated assertion
+				Expect(Server.Database.PurgeSchedule).To(BeEmpty()) // New assertion
 				Expect(Server.Logger.Level).To(BeEmpty())
 				Expect(Server.Scanner.Directory).To(BeEmpty())
 				Expect(Server.Scanner.Schedule).To(BeEmpty())

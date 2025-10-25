@@ -11,6 +11,7 @@ import (
 // A list of task types
 const (
 	TypeLyricsDownload = "lyrics:download"
+	TypeDatabasePurge  = "database:purge"
 )
 
 // Task payload
@@ -30,4 +31,8 @@ func NewDownloadLyricsTaskHandler(filepath string) (*asynq.Task, error) {
 	// Let times for the lyrics (.lrc and .txt) to be present on the filesystem.
 	// Prevent false-negative local lyrics detection
 	return asynq.NewTask(TypeLyricsDownload, payload, asynq.ProcessIn(10*time.Second)), nil
+}
+
+func NewDatabaseCleanUp() (*asynq.Task, error) {
+	return asynq.NewTask(TypeDatabasePurge, nil, asynq.MaxRetry(1)), nil
 }
