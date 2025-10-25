@@ -34,7 +34,7 @@ var _ = Describe("Database", func() {
 
 		config.ResetConfig()
 		config.Server.General.DataPath = tempDir
-		config.Server.General.DatabaseName = "test.db"
+		config.Server.Database.Name = "test.db"
 		config.Server.Logger.Level = "error"
 
 		db = database.Connect()

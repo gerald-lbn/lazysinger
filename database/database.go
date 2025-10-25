@@ -21,7 +21,7 @@ func Connect() *gorm.DB {
 		return nil
 	}
 
-	dbPath := filepath.Join(dbDir, config.Server.General.DatabaseName)
+	dbPath := filepath.Join(dbDir, config.Server.Database.Name)
 
 	gormConfig := &gorm.Config{
 		Logger: logger.Default.LogMode(logLevel()),
