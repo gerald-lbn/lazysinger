@@ -9,15 +9,20 @@ import (
 )
 
 type configOptions struct {
-	General generalOptions
-	Logger  loggerOptions
-	Scanner scannerOptions
-	Worker  workerOptions
+	Database databaseOptions
+	General  generalOptions
+	Logger   loggerOptions
+	Scanner  scannerOptions
+	Worker   workerOptions
+}
+
+type databaseOptions struct {
+	Name          string
+	PurgeSchedule string
 }
 
 type generalOptions struct {
-	DataPath     string
-	DatabaseName string
+	DataPath string
 }
 
 type loggerOptions struct {
@@ -36,22 +41,24 @@ type workerOptions struct {
 
 var (
 	// Environement keys
-	DATA_PATH          = "DATA_PATH"
-	DATABASE_NAME      = "DATABASE_NAME"
-	LOG_LEVEL          = "LOG_LEVEL"
-	MUSIC_LIBRARY      = "MUSIC_LIBRARY"
-	REDIS_ADDR         = "REDIS_ADDR"
-	SCHEDULE           = "SCHEDULE"
-	WORKER_CONCURRENCY = "WORKER_CONCURRENCY"
+	DATA_PATH               = "DATA_PATH"
+	DATABASE_NAME           = "DATABASE_NAME"
+	DATABASE_PURGE_SCHEDULE = "DATABASE_PURGE_SCHEDULE"
+	LOG_LEVEL               = "LOG_LEVEL"
+	MUSIC_LIBRARY           = "MUSIC_LIBRARY"
+	REDIS_ADDR              = "REDIS_ADDR"
+	SCANNING_SCHEDULE       = "SCANNING_SCHEDULE"
+	WORKER_CONCURRENCY      = "WORKER_CONCURRENCY"
 
 	// Default environment keys
-	DEFAULT_DATA_PATH          = "/data"
-	DEFAULT_DATABASE_NAME      = "lazysinger.db"
-	DEFAULT_LOG_LEVEL          = "info"
-	DEFAULT_MUSIC_LIBRARY      = "/music"
-	DEFAULT_REDIS_ADDR         = "localhost:6379"
-	DEFAULT_SCHEDULE           = "* */1 * * *"
-	DEFAULT_WORKER_CONCURRENCY = "1"
+	DEFAULT_DATA_PATH               = "/data"
+	DEFAULT_DATABASE_NAME           = "lazysinger.db"
+	DEFAULT_DATABASE_PURGE_SCHEDULE = "*/30 * * * *"
+	DEFAULT_LOG_LEVEL               = "info"
+	DEFAULT_MUSIC_LIBRARY           = "/music"
+	DEFAULT_REDIS_ADDR              = "localhost:6379"
+	DEFAULT_SCANNING_SCHEDULE       = "* */1 * * *"
+	DEFAULT_WORKER_CONCURRENCY      = "1"
 
 	Server = &configOptions{}
 )
@@ -73,7 +80,7 @@ func Setup() error {
 	Server.Logger.Level = LoadWithDefault(LOG_LEVEL, DEFAULT_LOG_LEVEL)
 
 	Server.Scanner.Directory = LoadWithDefault(MUSIC_LIBRARY, DEFAULT_MUSIC_LIBRARY)
-	Server.Scanner.Schedule = LoadWithDefault(SCHEDULE, DEFAULT_SCHEDULE)
+	Server.Scanner.Schedule = LoadWithDefault(SCANNING_SCHEDULE, DEFAULT_SCANNING_SCHEDULE)
 
 	c := LoadWithDefault(WORKER_CONCURRENCY, DEFAULT_WORKER_CONCURRENCY)
 	i, err := strconv.Atoi(c)
@@ -91,7 +98,9 @@ func Setup() error {
 	Server.Worker.RedisAddr = LoadWithDefault(REDIS_ADDR, DEFAULT_REDIS_ADDR)
 
 	Server.General.DataPath = LoadWithDefault(DATA_PATH, DEFAULT_DATA_PATH)
-	Server.General.DatabaseName = LoadWithDefault(DATABASE_NAME, DEFAULT_DATABASE_NAME)
+
+	Server.Database.Name = LoadWithDefault(DATABASE_NAME, DEFAULT_DATABASE_NAME)
+	Server.Database.PurgeSchedule = LoadWithDefault(DATABASE_PURGE_SCHEDULE, DEFAULT_DATABASE_PURGE_SCHEDULE)
 
 	return nil
 }
