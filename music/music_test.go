@@ -121,25 +121,6 @@ var _ = Describe("Music", func() {
 				os.Remove(txtFilePath)
 				os.Remove(lrcFilePath)
 			})
-
-			It("deletes txt file successfully", func() {
-				err := music.DeleteLyrics(txtFilePath)
-				Expect(err).NotTo(HaveOccurred())
-				_, err = os.Stat(txtFilePath)
-				Expect(os.IsNotExist(err)).To(BeTrue())
-			})
-
-			It("deletes lrc file successfully", func() {
-				err := music.DeleteLyrics(lrcFilePath)
-				Expect(err).NotTo(HaveOccurred())
-				_, err = os.Stat(lrcFilePath)
-				Expect(os.IsNotExist(err)).To(BeTrue())
-			})
-
-			It("returns error for non-existent file", func() {
-				err := music.DeleteLyrics("non_existent_file.txt")
-				Expect(err).To(HaveOccurred())
-			})
 		})
 	})
 

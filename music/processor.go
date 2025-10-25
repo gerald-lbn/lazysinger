@@ -29,12 +29,3 @@ func DownloadLyrics(pathToFile string, lyrics string) error {
 
 	return err
 }
-
-func DeleteLyrics(pathToFile string) error {
-	log.Debug().Str("file", pathToFile).Msg("Deleting lyrics")
-	err := os.Remove(pathToFile)
-	if err != nil {
-		log.Error().Err(err).Msg("An occured while deleting lyrics")
-	}
-	return err
-}
