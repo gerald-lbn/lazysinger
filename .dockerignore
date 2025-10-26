@@ -26,6 +26,8 @@ go.work.sum
 
 # env file
 .env
+.env.example
+.env.test
 
 # Editor/IDE
  .idea/
@@ -38,6 +40,19 @@ go.work.sum
 
 # Tests
 *_test.go
+test_data
 
 # Local database
 *.db
+
+# Docker
+Dockerfile
+.dockerignore
+compose.yml
+compose-*.yml
+/data
+
+# Git
+.git
+.github
+.gitignore

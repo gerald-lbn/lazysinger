@@ -11,12 +11,15 @@ import (
 // A list of task types
 const (
 	TypeLyricsDownload = "lyrics:download"
+	TypeDatabasePurge  = "database:purge"
 )
 
 // Task payload
 type LyricsDownloadPayload struct {
 	Filepath string
 }
+
+type PurgeDatabasePayload = LyricsDownloadPayload
 
 func NewDownloadLyricsTaskHandler(filepath string) (*asynq.Task, error) {
 	payload, err := json.Marshal(LyricsDownloadPayload{
@@ -30,4 +33,16 @@ func NewDownloadLyricsTaskHandler(filepath string) (*asynq.Task, error) {
 	// Let times for the lyrics (.lrc and .txt) to be present on the filesystem.
 	// Prevent false-negative local lyrics detection
 	return asynq.NewTask(TypeLyricsDownload, payload, asynq.ProcessIn(10*time.Second)), nil
+}
+
+func NewDatabasePurge(filepath string) (*asynq.Task, error) {
+	payload, err := json.Marshal(PurgeDatabasePayload{
+		Filepath: filepath,
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("An error occurred while marshaling the 'PurgeDatabasePayload' payload")
+		return nil, err
+	}
+
+	return asynq.NewTask(TypeDatabasePurge, payload, asynq.MaxRetry(1)), nil
 }

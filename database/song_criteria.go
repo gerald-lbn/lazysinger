@@ -2,7 +2,7 @@ package database
 
 type SongCriteria struct {
 	ID              *uint   // Filter songs by their primary key ID.
-	InPath          *string // Filter songs by their file path.
+	Path            *string // Filter songs by their file path.
 	Title           *string // Filter songs by their title.
 	Artist          *string // Filter songs by their artist.
 	Album           *string // Filter songs by their album.
@@ -19,7 +19,7 @@ func NewSongCriteria() *SongCriteria {
 // IsEmpty returns true if no filter criteria have been set.
 func (sc *SongCriteria) IsEmpty() bool {
 	return sc.ID == nil &&
-		sc.InPath == nil &&
+		sc.Path == nil &&
 		sc.Title == nil &&
 		sc.Artist == nil &&
 		sc.Album == nil &&
@@ -36,7 +36,7 @@ func (sc *SongCriteria) WithID(id uint) *SongCriteria {
 
 // WithPath sets the path filter for the criteria.
 func (sc *SongCriteria) WithPath(p string) *SongCriteria {
-	sc.InPath = &p
+	sc.Path = &p
 	return sc
 }
 

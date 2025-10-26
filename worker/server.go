@@ -20,6 +20,7 @@ func RunServer() error {
 
 	// mux handlers
 	mux.HandleFunc(TypeLyricsDownload, HandleDownloadLyricsTask)
+	mux.HandleFunc(TypeDatabasePurge, HandleDatabasePurgeTask)
 
 	return asynqServer.Run(mux)
 }

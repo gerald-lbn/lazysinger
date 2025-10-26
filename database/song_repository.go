@@ -38,7 +38,7 @@ func buildCriteria(ctx context.Context, db *gorm.DB, criteria *SongCriteria) *go
 
 	return q.Scopes(
 		withID(criteria.ID),
-		withPath(criteria.InPath),
+		withPath(criteria.Path),
 		withTitle(criteria.Title),
 		withArtist(criteria.Artist),
 		withAlbum(criteria.Album),
@@ -137,7 +137,7 @@ func (sr *song_repository) FindBy(criteria *SongCriteria) RepositoryOperationRes
 	if criteria.ID != nil && song.ID != *criteria.ID {
 		return RepositoryOperationResult[*Song]{Data: nil, Error: ErrSongNotFound}
 	}
-	if criteria.InPath != nil && song.Path != *criteria.InPath {
+	if criteria.Path != nil && song.Path != *criteria.Path {
 		return RepositoryOperationResult[*Song]{Data: nil, Error: ErrSongNotFound}
 	}
 	if criteria.Title != nil && song.Title != *criteria.Title {
