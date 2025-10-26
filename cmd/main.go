@@ -8,6 +8,7 @@ import (
 
 	"github.com/gerald-lbn/lazysinger/config"
 	"github.com/gerald-lbn/lazysinger/log"
+	"github.com/gerald-lbn/lazysinger/purger"
 	"github.com/gerald-lbn/lazysinger/scanner"
 	"github.com/gerald-lbn/lazysinger/scheduler"
 	"github.com/gerald-lbn/lazysinger/worker"
@@ -31,6 +32,7 @@ func runLazySinger(ctx context.Context) {
 	g.Go(startScheduler(ctx))
 	g.Go(startWorkerServer())
 	g.Go(schedulePeriodicScan(ctx))
+	g.Go(schedulePeriodicDatabasePurge(ctx))
 
 	if err := g.Wait(); err != nil {
 		log.Error().Err(err).Msg("Fatal error in LazySinger. Aborting")
@@ -81,6 +83,25 @@ func schedulePeriodicScan(ctx context.Context) func() error {
 			log.Error().Err(err).Msg("An error occured while scheduling periodic task")
 		} else {
 			log.Debug().Msg("Periodic scan scheduled successfully")
+		}
+
+		return err
+	}
+}
+
+func schedulePeriodicDatabasePurge(ctx context.Context) func() error {
+	return func() error {
+		log.Info().Msg("Scheduling periodic database purge")
+		schedulerInstance := scheduler.GetInstance()
+
+		_, err := schedulerInstance.AddJob(config.Server.Database.PurgeSchedule, func() {
+			err := purger.PurgeAll(ctx)
+			if err == nil {
+				log.Debug().Msg("Database purge successfully")
+			}
+		})
+		if err == nil {
+			log.Debug().Msg("Periodic database purge scheduled successfully")
 		}
 
 		return err
