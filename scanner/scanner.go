@@ -3,6 +3,7 @@ package scanner
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io/fs"
 	"path/filepath"
 
@@ -32,11 +33,12 @@ func ScanAll(ctx context.Context) error {
 				log.Debug().Str("path", path).Msg("Download task created successfully")
 			}
 
-			taskInfo, err := asynqClient.Enqueue(task, asynq.TaskID(path))
+			taskID := fmt.Sprintf("downloading-lyrics:%s", path)
+			taskInfo, err := asynqClient.Enqueue(task, asynq.TaskID(taskID))
 			switch {
 			case errors.Is(err, asynq.ErrTaskIDConflict), errors.Is(err, asynq.ErrDuplicateTask):
 				{
-					log.Warn().Err(err).Msg("This track already has a task in queue, skipping...")
+					log.Warn().Err(err).Msg("This track already has a task in queue for lyrics download, skipping...")
 				}
 			case err != nil:
 				{
