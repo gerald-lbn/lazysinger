@@ -19,6 +19,8 @@ type LyricsDownloadPayload struct {
 	Filepath string
 }
 
+type PurgeDatabasePayload = LyricsDownloadPayload
+
 func NewDownloadLyricsTaskHandler(filepath string) (*asynq.Task, error) {
 	payload, err := json.Marshal(LyricsDownloadPayload{
 		Filepath: filepath,
@@ -33,6 +35,14 @@ func NewDownloadLyricsTaskHandler(filepath string) (*asynq.Task, error) {
 	return asynq.NewTask(TypeLyricsDownload, payload, asynq.ProcessIn(10*time.Second)), nil
 }
 
-func NewDatabaseCleanUp() (*asynq.Task, error) {
-	return asynq.NewTask(TypeDatabasePurge, nil, asynq.MaxRetry(1)), nil
+func NewDatabasePurge(filepath string) (*asynq.Task, error) {
+	payload, err := json.Marshal(PurgeDatabasePayload{
+		Filepath: filepath,
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("An error occurred while marshaling the 'PurgeDatabasePayload' payload")
+		return nil, err
+	}
+
+	return asynq.NewTask(TypeDatabasePurge, payload, asynq.MaxRetry(1)), nil
 }

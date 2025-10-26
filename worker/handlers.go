@@ -3,9 +3,7 @@ package worker
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"os"
 
 	"github.com/gerald-lbn/lazysinger/database"
 	"github.com/gerald-lbn/lazysinger/log"
@@ -77,32 +75,30 @@ func HandleDownloadLyricsTask(ctx context.Context, t *asynq.Task) error {
 func HandleDatabasePurgeTask(ctx context.Context, t *asynq.Task) error {
 	ERROR_MSG := "An error occured while cleaning up database."
 
+	var p LyricsDownloadPayload
+	if err := json.Unmarshal(t.Payload(), &p); err != nil {
+		returnError := fmt.Errorf("Unable to json.Unmarshal task payload: %v: %w", err, asynq.SkipRetry)
+		log.Error().Err(err).Interface("payload", p).Msg(ERROR_MSG)
+		return returnError
+	}
+
 	db := database.Connect()
 	sr := database.NewSongRepository(ctx, db)
 
-	// Query all songs in the database
-	results := sr.FindManyBy(&database.SongCriteria{})
-	if results.Error != nil {
-		log.Error().Err(results.Error).Msg(ERROR_MSG)
-		return results.Error
+	// Make sure the song exists in the database
+	findByResult := sr.FindBy(&database.SongCriteria{Path: &p.Filepath})
+	if findByResult.Error != nil {
+		log.Error().Err(findByResult.Error).Msg(ERROR_MSG)
+		return findByResult.Error
 	}
 
-	// Loop over songs
-	for _, song := range *results.Data {
-		if _, err := os.Stat(song.Path); errors.Is(err, os.ErrNotExist) {
-			findByResult := sr.FindBy(&database.SongCriteria{Path: &song.Path})
-			if findByResult.Error != nil {
-				log.Error().Err(findByResult.Error).Str("path", song.Path).Msg(ERROR_MSG)
-			}
-
-			deleteResult := sr.Delete(findByResult.Data)
-			if deleteResult.Error != nil {
-				log.Error().Err(deleteResult.Error).Str("path", song.Path).Msg(ERROR_MSG)
-			}
-		}
+	// Delete the song
+	deleteResult := sr.Delete(findByResult.Data)
+	if deleteResult.Error != nil {
+		log.Error().Err(deleteResult.Error).Str("path", p.Filepath).Msg(ERROR_MSG)
 	}
 
-	log.Info().Msg("Database cleaned")
+	log.Info().Str("path", p.Filepath).Msg("Entry purged")
 
 	if err := database.Close(db); err != nil {
 		log.Error().Err(err).Msg(ERROR_MSG)
