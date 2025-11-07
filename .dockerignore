@@ -1,0 +1,9 @@
+# Docker
+Dockerfile
+.dockerignore
+
+# Test
+test/
+
+# Git
+.git
