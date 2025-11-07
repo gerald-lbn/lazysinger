@@ -7,10 +7,10 @@ import (
 )
 
 var _ = Describe("Music", func() {
-	When("When extracting music metadata", func() {
-		var voreAudioPath = "../test_data/05. Vore.flac"
-		var vorePlainLyrics = "../test_data/05. Vore.txt"
+	var voreAudioPath = "../test_data/Vore.flac"
+	var vorePlainLyrics = "../test_data/Vore.txt"
 
+	When("extracting music metadata", func() {
 		Context("from a audio file", func() {
 			metadata, err := music.ExtractMetadata(voreAudioPath)
 
