@@ -2,7 +2,9 @@ package watcher
 
 import (
 	"context"
+	"io/fs"
 	"log"
+	"path/filepath"
 
 	"github.com/fsnotify/fsnotify"
 )
@@ -27,8 +29,8 @@ func NewWatcher() (Watcher, error) {
 	return &fs_watcher{watcher: w, done: make(chan struct{})}, nil
 }
 
-func (w *fs_watcher) Start(ctx context.Context, path string) error {
-	log.Printf("Starting fs watcher for directory: %s", path)
+func (w *fs_watcher) Start(ctx context.Context, dir string) error {
+	log.Printf("Starting fs watcher for directory: %s", dir)
 
 	defer w.watcher.Close()
 
@@ -40,23 +42,38 @@ func (w *fs_watcher) Start(ctx context.Context, path string) error {
 				if !ok {
 					return
 				}
-				log.Println("event:", event)
-				if event.Has(fsnotify.Write) {
-					log.Println("modified file:", event.Name)
-				}
+
+				log.Printf("Event: %s, File: %s\n", event.Op.String(), event.Name)
+
 			case err, ok := <-w.watcher.Errors:
 				if !ok {
 					return
 				}
 				log.Println("error:", err)
+
+			case <-w.done:
+				return
+
+			case <-ctx.Done():
+				return
 			}
 		}
 	}()
 
-	err := w.watcher.Add(path)
+	err := w.watcher.Add(dir)
 	if err != nil {
 		return err
 	}
+
+	err = filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+		log.Printf("Found '%s' while walking down the '%s'", path, dir)
+
+		if d.IsDir() {
+			w.watcher.Add(path)
+		}
+
+		return nil
+	})
 
 	select {
 	case <-ctx.Done():
