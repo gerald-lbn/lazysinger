@@ -33,13 +33,4 @@ go.work.sum
 .zed/
 
 # Docker
-compose.yml
 compose.try.yml
-Dockerfile
-
-# Go tests
-test-data/
-*_test.go
-
-# Scripts
-Makefile
