@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gerald-lbn/refrain/helpers"
+	"github.com/gerald-lbn/refrain/utils/file"
 	"go.senan.xyz/taglib"
 )
 
@@ -80,14 +80,14 @@ func ExtractMetadata(p string) (*Metadata, error) {
 		return nil, err
 	}
 
-	hasPlainLyrics := helpers.Exists(plainLyricsPath)
+	hasPlainLyrics := file.Exists(plainLyricsPath)
 
 	syncedLyricsPath, err := GenerateSyncedLyricsFilePathFromAudioFilePath(p)
 	if err != nil {
 		return nil, err
 	}
 
-	hasSyncedLyrics := helpers.Exists(syncedLyricsPath)
+	hasSyncedLyrics := file.Exists(syncedLyricsPath)
 
 	return &Metadata{
 		Path:             p,
