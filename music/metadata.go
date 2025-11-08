@@ -1,8 +1,15 @@
 package music
 
 import (
+	"errors"
+	"path/filepath"
+	"strings"
+
 	"go.senan.xyz/taglib"
 )
+
+var ErrNoExtensionInPath = errors.New("No extension found in path")
+var ErrEmptyFilePath = errors.New("Path is empty")
 
 // Metadata contains the metadata properties of an audio file
 type Metadata struct {
@@ -53,4 +60,32 @@ func ExtractMetadata(p string) (*Metadata, error) {
 		Artist:   &artist,
 		Duration: properties.Length.Seconds(),
 	}, nil
+}
+
+// generateLyricsFilePathFromAudioFilePath is a helper function to create a lyrics file path
+// with a specified extension from an audio file path.
+func generateLyricsFilePathFromAudioFilePath(p, ext string) (string, error) {
+	if p == "" || p == "." {
+		return "", ErrEmptyFilePath
+	}
+
+	audioExt := filepath.Ext(p)
+	if audioExt == "" {
+		return "", ErrNoExtensionInPath
+	}
+
+	base := strings.TrimSuffix(p, audioExt)
+	return base + "." + ext, nil
+}
+
+// GeneratePlainLyricsFilePathFromAudioFilePath generates a .txt lyrics file path
+// from an audio file path.
+func GeneratePlainLyricsFilePathFromAudioFilePath(p string) (string, error) {
+	return generateLyricsFilePathFromAudioFilePath(p, "txt")
+}
+
+// GenerateSyncedLyricsFilePathFromAudioFilePath generates a .lrc (synced lyrics) file path
+// from an audio file path.
+func GenerateSyncedLyricsFilePathFromAudioFilePath(p string) (string, error) {
+	return generateLyricsFilePathFromAudioFilePath(p, "lrc")
 }

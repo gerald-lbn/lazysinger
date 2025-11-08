@@ -41,4 +41,78 @@ var _ = Describe("Music", func() {
 			})
 		})
 	})
+
+	When("generating path", func() {
+		Context("for synced lyrics", func() {
+			DescribeTable("should return an error for paths without extension",
+				func(audioPath string) {
+					lyricsPath, err := music.GenerateSyncedLyricsFilePathFromAudioFilePath(audioPath)
+					Expect(lyricsPath).To(BeEmpty())
+					Expect(err).To(MatchError(music.ErrNoExtensionInPath))
+				},
+				Entry("empty path", ""),
+				Entry("dot path", "."),
+				Entry("slash path", "/"),
+			)
+
+			It("should generate a synced lyrics file path with .lrc extension", func() {
+				audioPath := "/path/to/audio.mp3"
+				expectedPath := "/path/to/audio.lrc"
+				lyricsPath, err := music.GenerateSyncedLyricsFilePathFromAudioFilePath(audioPath)
+				Expect(lyricsPath).To(Equal(expectedPath))
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("should handle audio files with multiple dots in their name correctly", func() {
+				audioPath := "/path/to/my.audio.file.flac"
+				expectedPath := "/path/to/my.audio.file.lrc"
+				lyricsPath, err := music.GenerateSyncedLyricsFilePathFromAudioFilePath(audioPath)
+				Expect(lyricsPath).To(Equal(expectedPath))
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("should return an error if the audio file path has no extension", func() {
+				audioPath := "/path/to/audiofile"
+				lyricsPath, err := music.GenerateSyncedLyricsFilePathFromAudioFilePath(audioPath)
+				Expect(lyricsPath).To(BeEmpty())
+				Expect(err).To(MatchError(music.ErrNoExtensionInPath))
+			})
+		})
+
+		Context("for plain lyrics", func() {
+			DescribeTable("should return an error for silly paths without extension",
+				func(audioPath string) {
+					lyricsPath, err := music.GeneratePlainLyricsFilePathFromAudioFilePath(audioPath)
+					Expect(lyricsPath).To(BeEmpty())
+					Expect(err).To(MatchError(music.ErrNoExtensionInPath))
+				},
+				Entry("empty path", ""),
+				Entry("dot path", "."),
+				Entry("slash path", "/"),
+			)
+
+			It("should generate a plain lyrics file path with .txt extension", func() {
+				audioPath := "/path/to/audio.flac"
+				expectedPath := "/path/to/audio.txt"
+				lyricsPath, err := music.GeneratePlainLyricsFilePathFromAudioFilePath(audioPath)
+				Expect(lyricsPath).To(Equal(expectedPath))
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("should handle audio files with multiple dots in their name correctly", func() {
+				audioPath := "/path/to/my.audio.file.mp3"
+				expectedPath := "/path/to/my.audio.file.txt"
+				lyricsPath, err := music.GeneratePlainLyricsFilePathFromAudioFilePath(audioPath)
+				Expect(lyricsPath).To(Equal(expectedPath))
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("should return an error if the audio file path has no extension", func() {
+				audioPath := "/path/to/audiofile"
+				lyricsPath, err := music.GeneratePlainLyricsFilePathFromAudioFilePath(audioPath)
+				Expect(lyricsPath).To(BeEmpty())
+				Expect(err).To(MatchError(music.ErrNoExtensionInPath))
+			})
+		})
+	})
 })
