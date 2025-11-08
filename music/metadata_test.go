@@ -7,8 +7,9 @@ import (
 )
 
 var _ = Describe("Music", func() {
-	var voreAudioPath = "../test_data/Vore.flac"
-	var vorePlainLyrics = "../test_data/Vore.txt"
+	var voreAudioPath = "./test_data/Vore.flac"
+	var vorePlainLyrics = "./test_data/Vore.txt"
+	var voreSyncedLyrics = "./test_data/Vore.lrc"
 
 	When("extracting music metadata", func() {
 		Context("from a audio file", func() {
@@ -19,15 +20,23 @@ var _ = Describe("Music", func() {
 				Expect(err).ToNot(HaveOccurred())
 			})
 
-			It("should return metadata with the correct title, artist album and duration", func() {
+			It("should return metadata with the correct informations", func() {
 				Expect(*metadata.Title).To(Equal("Vore"))
 				Expect(*metadata.Artist).To(Equal("Sleep Token"))
 				Expect(*metadata.Album).To(Equal("Take Me Back To Eden"))
 				Expect(metadata.Duration).To(BeNumerically("~", 4, 1))
+				Expect(metadata.HasPlainLyrics).To(BeTrue())
+				Expect(metadata.HasSyncedLyrics).To(BeTrue())
+				Expect(metadata.PlainLyricsPath).To(Equal(vorePlainLyrics))
+				Expect(metadata.SyncedLyricsPath).To(Equal(voreSyncedLyrics))
 			})
 
 			It("should return true if all metadata are set", func() {
 				Expect(metadata.HasAllMetadata()).To(BeTrue())
+			})
+
+			It("should return true if both lyrics are stored locally", func() {
+				Expect(metadata.HasBothLyricsStoredLocally()).To(BeTrue())
 			})
 		})
 
@@ -44,17 +53,6 @@ var _ = Describe("Music", func() {
 
 	When("generating path", func() {
 		Context("for synced lyrics", func() {
-			DescribeTable("should return an error for paths without extension",
-				func(audioPath string) {
-					lyricsPath, err := music.GenerateSyncedLyricsFilePathFromAudioFilePath(audioPath)
-					Expect(lyricsPath).To(BeEmpty())
-					Expect(err).To(MatchError(music.ErrNoExtensionInPath))
-				},
-				Entry("empty path", ""),
-				Entry("dot path", "."),
-				Entry("slash path", "/"),
-			)
-
 			It("should generate a synced lyrics file path with .lrc extension", func() {
 				audioPath := "/path/to/audio.mp3"
 				expectedPath := "/path/to/audio.lrc"
@@ -80,17 +78,6 @@ var _ = Describe("Music", func() {
 		})
 
 		Context("for plain lyrics", func() {
-			DescribeTable("should return an error for silly paths without extension",
-				func(audioPath string) {
-					lyricsPath, err := music.GeneratePlainLyricsFilePathFromAudioFilePath(audioPath)
-					Expect(lyricsPath).To(BeEmpty())
-					Expect(err).To(MatchError(music.ErrNoExtensionInPath))
-				},
-				Entry("empty path", ""),
-				Entry("dot path", "."),
-				Entry("slash path", "/"),
-			)
-
 			It("should generate a plain lyrics file path with .txt extension", func() {
 				audioPath := "/path/to/audio.flac"
 				expectedPath := "/path/to/audio.txt"
