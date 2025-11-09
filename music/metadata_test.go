@@ -7,9 +7,9 @@ import (
 )
 
 var _ = Describe("Music", func() {
-	var voreAudioPath = "./test_data/Vore.flac"
-	var vorePlainLyrics = "./test_data/Vore.txt"
-	var voreSyncedLyrics = "./test_data/Vore.lrc"
+	var voreAudioPath = "../test_data/Vore.flac"
+	var vorePlainLyrics = "../test_data/Vore.txt"
+	var voreSyncedLyrics = "../test_data/Vore.lrc"
 
 	When("extracting music metadata", func() {
 		Context("from a audio file", func() {
