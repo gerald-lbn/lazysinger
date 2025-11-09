@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 )
@@ -82,7 +81,6 @@ func craftLRCLibProviderURL(endpoint string, params map[string]string) string {
 	}
 
 	url := endpoint + "?" + queryParams.Encode()
-	log.Printf("URL: %s", url)
 	return url
 }
 
