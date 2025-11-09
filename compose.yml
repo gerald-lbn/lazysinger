@@ -6,3 +6,10 @@ services:
       dockerfile: Dockerfile
     volumes:
       - /path/to/your/music/library:/music:ro
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:latest
+    volumes:
+      - /path/to/redis/data:/data
