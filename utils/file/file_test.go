@@ -10,6 +10,7 @@ import (
 	"github.com/gerald-lbn/refrain/utils/file"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/types"
 )
 
 var _ = Describe("Exists", func() {
@@ -87,5 +88,29 @@ var _ = Describe("Exists", func() {
 		// This test might be platform specific, but we test the general case
 		result := file.Exists("/root/.ssh/id_rsa") // Likely to not exist or be inaccessible
 		Expect(result).To(Or(BeTrue(), BeFalse())) // Should not panic
+	})
+})
+
+const (
+	VoreLrcFile  = "../../test_data/Vore.lrc"
+	VoreTxtFile  = "../../test_data/Vore.txt"
+	VoreFlacFile = "../../test_data/Vore.flac"
+)
+
+var _ = Describe("IsAudioFile", func() {
+	When("checking if an actual file is music file", func() {
+		DescribeTable("should correctly identify audio files",
+			func(p string, expectedOk bool, matchError types.GomegaMatcher) {
+				ok, err := file.IsAudioFile(p)
+
+				Expect(ok).To(Equal(expectedOk))
+				Expect(err).To(matchError)
+			},
+
+			Entry("LRC file should not be detected as audio", VoreLrcFile, false, BeNil()),
+			Entry("TXT file should not be detected as audio", VoreTxtFile, false, BeNil()),
+			Entry("FLAC file should be detected as audio", VoreFlacFile, true, BeNil()),
+			Entry("should fail when given a directory instead", "/", false, HaveOccurred()),
+		)
 	})
 })

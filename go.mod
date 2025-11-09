@@ -4,6 +4,7 @@ go 1.24.9
 
 require (
 	github.com/fsnotify/fsnotify v1.9.0
+	github.com/gabriel-vasile/mimetype v1.4.11
 	github.com/hibiken/asynq v0.25.1
 	github.com/onsi/ginkgo/v2 v2.27.2
 	github.com/onsi/gomega v1.38.2
