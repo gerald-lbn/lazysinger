@@ -36,6 +36,7 @@ go.work.sum
 compose.yml
 compose.try.yml
 Dockerfile
+.docker/
 
 # Go tests
 test_data/
@@ -43,3 +44,7 @@ test_data/
 
 # Scripts
 Makefile
+
+# Git
+.git
+.gitignore
