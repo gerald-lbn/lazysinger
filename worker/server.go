@@ -7,7 +7,11 @@ import (
 	"github.com/hibiken/asynq"
 )
 
-const redisAddr = "redis:6379"
+const (
+	redisAddr = "redis:6379"
+
+	DownloadLyricsQueue = "download_lyrics"
+)
 
 // NewServer returns a new Server.
 func NewServer() *asynq.Server {
@@ -16,9 +20,7 @@ func NewServer() *asynq.Server {
 		asynq.Config{
 			Concurrency: 10,
 			Queues: map[string]int{
-				"critical": 6,
-				"default":  3,
-				"low":      1,
+				DownloadLyricsQueue: 10,
 			},
 		},
 	)
