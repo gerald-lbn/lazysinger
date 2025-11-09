@@ -66,5 +66,7 @@ func startWorkerServer(ctx context.Context) func() error {
 	server := worker.NewServer()
 	mux := worker.NewServeMux()
 
+	mux.HandleFunc(worker.TypeDownloadLyrics, worker.HandleDownloadLyricsTask)
+
 	return worker.StartAsynqServer(ctx, server, mux)
 }
