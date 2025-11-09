@@ -38,7 +38,7 @@ compose.try.yml
 Dockerfile
 
 # Go tests
-test-data/
+test_data/
 *_test.go
 
 # Scripts
