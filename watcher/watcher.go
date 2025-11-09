@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/gerald-lbn/refrain/watcher/handlers"
 )
 
 type fs_watcher struct {
@@ -66,10 +67,10 @@ func (w *fs_watcher) Start(ctx context.Context, dir string) error {
 	}
 
 	err = filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
-		log.Printf("Found '%s' while walking down the '%s'", path, dir)
-
 		if d.IsDir() {
 			w.watcher.Add(path)
+		} else {
+			handlers.OnInitialScan(path)
 		}
 
 		return nil
