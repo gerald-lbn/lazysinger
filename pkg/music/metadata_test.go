@@ -1,7 +1,7 @@
 package music_test
 
 import (
-	"github.com/gerald-lbn/refrain/music"
+	"github.com/gerald-lbn/refrain/pkg/music"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

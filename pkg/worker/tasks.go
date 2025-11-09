@@ -7,8 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/gerald-lbn/refrain/music"
-	"github.com/gerald-lbn/refrain/music/lrclib"
+	"github.com/gerald-lbn/refrain/pkg/music"
+	"github.com/gerald-lbn/refrain/pkg/music/lrclib"
 	"github.com/hibiken/asynq"
 )
 

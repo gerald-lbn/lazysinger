@@ -3,8 +3,8 @@ package worker_test
 import (
 	"context"
 
-	"github.com/gerald-lbn/refrain/music"
-	"github.com/gerald-lbn/refrain/worker"
+	"github.com/gerald-lbn/refrain/pkg/music"
+	"github.com/gerald-lbn/refrain/pkg/worker"
 	"github.com/hibiken/asynq"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

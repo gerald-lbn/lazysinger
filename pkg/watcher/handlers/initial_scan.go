@@ -4,9 +4,9 @@ import (
 	"errors"
 	"log"
 
-	"github.com/gerald-lbn/refrain/music"
-	"github.com/gerald-lbn/refrain/utils/file"
-	"github.com/gerald-lbn/refrain/worker"
+	"github.com/gerald-lbn/refrain/pkg/music"
+	"github.com/gerald-lbn/refrain/pkg/utils/file"
+	"github.com/gerald-lbn/refrain/pkg/worker"
 	"github.com/hibiken/asynq"
 )
 

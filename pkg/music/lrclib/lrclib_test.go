@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/gerald-lbn/refrain/music/lrclib"
+	"github.com/gerald-lbn/refrain/pkg/music/lrclib"
 )
 
 func TestProvider(t *testing.T) {

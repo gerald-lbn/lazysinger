@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/gerald-lbn/refrain/watcher/handlers"
+	"github.com/gerald-lbn/refrain/pkg/watcher/handlers"
 )
 
 type fs_watcher struct {

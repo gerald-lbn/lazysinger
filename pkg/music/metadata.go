@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gerald-lbn/refrain/utils/file"
+	"github.com/gerald-lbn/refrain/pkg/utils/file"
 	"go.senan.xyz/taglib"
 )
 

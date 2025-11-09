@@ -7,8 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/gerald-lbn/refrain/watcher"
-	"github.com/gerald-lbn/refrain/worker"
+	"github.com/gerald-lbn/refrain/pkg/watcher"
+	"github.com/gerald-lbn/refrain/pkg/worker"
 	"golang.org/x/sync/errgroup"
 )
 
