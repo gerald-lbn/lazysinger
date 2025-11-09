@@ -10,23 +10,14 @@ import (
 type Environment string
 
 const (
-	// EnvLocal represents the local environment.
-	EnvLocal Environment = "local"
-
-	// EnvTest represents the test environment.
-	EnvTest Environment = "test"
-
 	// EnvDevelopment represents the development environment.
 	EnvDevelopment Environment = "dev"
 
-	// EnvStaging represents the staging environment.
-	EnvStaging Environment = "staging"
-
-	// EnvQA represents the qa environment.
-	EnvQA Environment = "qa"
-
 	// EnvProduction represents the production environment.
 	EnvProduction Environment = "prod"
+
+	// EnvTest represents the test environment.
+	EnvTest Environment = "test"
 )
 
 // SwitchEnvironment sets the environment variable used to dictate which environment the application is
@@ -41,13 +32,19 @@ func SwitchEnvironment(env Environment) {
 type (
 	// Config stores complete application configuration.
 	Config struct {
-		App AppConfig
+		App       AppConfig
+		Libraries LibrariesConfig
 	}
 
 	// AppConfig stores the application configuration.
 	AppConfig struct {
 		Name        string
 		Environment Environment
+	}
+
+	// LibrariesConfig stores configuration for music libraries.
+	LibrariesConfig struct {
+		Paths []string `mapstructure:"paths"`
 	}
 )
 

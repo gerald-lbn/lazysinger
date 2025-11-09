@@ -1,3 +1,7 @@
 app:
   name: Refrain
   environment: "local"
+
+libraries:
+  paths:
+    - "/music"
