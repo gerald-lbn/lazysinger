@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - /path/to/your/music/library:/music:ro
+      - /path/to/your/music/library:/music
     depends_on:
       - redis
 
@@ -13,3 +13,5 @@ services:
     image: redis:latest
     volumes:
       - /path/to/redis/data:/data
+    ports:
+      - 6379:6379
