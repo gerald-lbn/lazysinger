@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/gerald-lbn/refrain/watcher"
+	"github.com/gerald-lbn/refrain/worker"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -35,6 +36,7 @@ func runRefrain(ctx context.Context) {
 	g, ctx := errgroup.WithContext(ctx)
 
 	g.Go(startWatcher(ctx))
+	g.Go(startWorkerServer(ctx))
 
 	if err := g.Wait(); err != nil {
 		log.Print("A fatal error occured in Refrain. Aborting", err)
@@ -58,4 +60,11 @@ func startWatcher(ctx context.Context) func() error {
 
 		return nil
 	}
+}
+
+func startWorkerServer(ctx context.Context) func() error {
+	server := worker.NewServer()
+	mux := worker.NewServeMux()
+
+	return worker.StartAsynqServer(ctx, server, mux)
 }
