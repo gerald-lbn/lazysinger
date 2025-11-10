@@ -11,10 +11,10 @@ type Environment string
 
 const (
 	// EnvDevelopment represents the development environment.
-	EnvDevelopment Environment = "dev"
+	EnvDevelopment Environment = "development"
 
 	// EnvProduction represents the production environment.
-	EnvProduction Environment = "prod"
+	EnvProduction Environment = "production"
 
 	// EnvTest represents the test environment.
 	EnvTest Environment = "test"
