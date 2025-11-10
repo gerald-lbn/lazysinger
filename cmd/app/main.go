@@ -17,7 +17,10 @@ func main() {
 	slog.Info("application started",
 		"name", c.Config.App.Name,
 		"environment", c.Config.App.Environment,
-		"libraries", c.Config.Libraries.Paths)
+		"libraries", c.Config.Libraries.Paths,
+		"redis", c.Config.Redis.Addr,
+		"worker", c.Config.Worker.Concurrency,
+	)
 
 	c.Watcher.RegisterHandler(handleFileEvent)
 

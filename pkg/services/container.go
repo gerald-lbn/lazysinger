@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/gerald-lbn/refrain/config"
+	"github.com/hibiken/asynq"
 )
 
 // Container contains all services used by the application and provides an easy way to handle dependency
@@ -15,12 +16,16 @@ type Container struct {
 
 	// Watcher is the file watcher service.
 	Watcher *WatcherService
+
+	// WorkerServer stores a worker server
+	Worker *WorkerService
 }
 
 // NewContainer creates and initializes a new Container.
 func NewContainer() *Container {
 	c := new(Container)
 	c.initConfig()
+	c.initWorker()
 	c.initWatcher()
 	return c
 }
@@ -31,6 +36,10 @@ func (c *Container) Shutdown() error {
 		if err := c.Watcher.Stop(); err != nil {
 			return fmt.Errorf("failed to stop watcher: %w", err)
 		}
+	}
+
+	if c.Worker != nil {
+		c.Worker.server.Shutdown()
 	}
 
 	return nil
@@ -71,4 +80,28 @@ func (c *Container) initWatcher() {
 
 	// Start watching
 	c.Watcher.Start()
+}
+
+func (c *Container) initWorker() {
+	worker, err := NewWorkerService()
+	if err != nil {
+		panic(fmt.Sprintf("failed to create worker service: %v", err))
+	}
+
+	c.Worker = worker
+
+	worker.server = asynq.NewServer(
+		asynq.RedisClientOpt{
+			Addr: c.Config.Redis.Addr,
+		},
+		asynq.Config{
+			Concurrency: c.Config.Worker.Concurrency,
+			Queues: map[string]int{
+				DownloadLyricsQueueName: 10,
+			},
+		})
+
+	// Start server
+	c.Worker.Start()
+
 }

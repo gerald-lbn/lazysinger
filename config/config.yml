@@ -5,3 +5,9 @@ app:
 libraries:
   paths:
     - "/music"
+
+redis:
+  addr: redis:6379
+
+worker:
+  concurrency: 10

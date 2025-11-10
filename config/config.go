@@ -34,6 +34,8 @@ type (
 	Config struct {
 		App       AppConfig
 		Libraries LibrariesConfig
+		Redis     RedisConfig
+		Worker    WorkerConfig
 	}
 
 	// AppConfig stores the application configuration.
@@ -45,6 +47,16 @@ type (
 	// LibrariesConfig stores configuration for music libraries.
 	LibrariesConfig struct {
 		Paths []string `mapstructure:"paths"`
+	}
+
+	// RedisConfig stores configuration for redis
+	RedisConfig struct {
+		Addr string
+	}
+
+	// Worker stores configuration for worker server
+	WorkerConfig struct {
+		Concurrency int
 	}
 )
 
