@@ -38,12 +38,6 @@ type Lyrics struct {
 	SyncedLyrics string  `json:"syncedLyrics"`
 }
 
-type InvalidResponseError struct {
-	Code    int    `json:"code"`
-	Name    string `json:"name"`
-	Message string `json:"message"`
-}
-
 type LRCLibProvider struct {
 	BaseURL    string
 	HttpClient *http.Client
@@ -127,21 +121,17 @@ func (p *LRCLibProvider) SearchLyrics(ctx context.Context, opts SearchLyricsOpti
 	}
 	defer resp.Body.Close()
 
-	resBody, err := io.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		errorResp := &InvalidResponseError{}
-		if err := json.Unmarshal(resBody, errorResp); err == nil && errorResp.Message != "" {
-			return nil, fmt.Errorf("LRCLib API error (%d): %s", resp.StatusCode, errorResp.Message)
-		}
-		return nil, fmt.Errorf("LRCLib API search request failed with status: %d", resp.StatusCode)
+		return nil, fmt.Errorf("LRCLib API request failed with status: %d. Reason: %v", resp.StatusCode, string(respBody))
 	}
 
 	var lyricsList []Lyrics
-	if err := json.Unmarshal(resBody, &lyricsList); err != nil {
+	if err := json.Unmarshal(respBody, &lyricsList); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal lyrics search response: %w", err)
 	}
 
@@ -175,24 +165,20 @@ func (p *LRCLibProvider) GetLyrics(ctx context.Context, opts SearchLyricsOptions
 	}
 	defer resp.Body.Close()
 
-	resBody, err := io.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
 	// Check for invalid response
 	if resp.StatusCode != http.StatusOK {
-		errorResp := &InvalidResponseError{}
-		if err := json.Unmarshal(resBody, errorResp); err == nil && errorResp.Message != "" {
-			return nil, fmt.Errorf("LRCLib API error (%d): %s", resp.StatusCode, errorResp.Message)
-		}
-		return nil, fmt.Errorf("LRCLib API search request failed with status: %d", resp.StatusCode)
+		return nil, fmt.Errorf("LRCLib API request failed with status: %d. Reason: %v", resp.StatusCode, string(respBody))
 	}
 
 	// Parse valid lyrics response
 	lyrics := &Lyrics{}
-	if err := json.Unmarshal(resBody, lyrics); err != nil {
-		return nil, err
+	if err := json.Unmarshal(respBody, lyrics); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal lyrics search response: %w", err)
 	}
 
 	return lyrics, nil
@@ -212,24 +198,20 @@ func (p *LRCLibProvider) GetLyricsByID(ctx context.Context, id string) (*Lyrics,
 	}
 	defer resp.Body.Close()
 
-	resBody, err := io.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
 	// Check for invalid response
 	if resp.StatusCode != http.StatusOK {
-		errorResp := &InvalidResponseError{}
-		if err := json.Unmarshal(resBody, errorResp); err == nil && errorResp.Message != "" {
-			return nil, fmt.Errorf("LRCLib API error (%d): %s", resp.StatusCode, errorResp.Message)
-		}
-		return nil, fmt.Errorf("LRCLib API search request failed with status: %d", resp.StatusCode)
+		return nil, fmt.Errorf("LRCLib API request failed with status: %d. Reason: %v", resp.StatusCode, string(respBody))
 	}
 
 	// Parse valid lyrics response
 	lyrics := &Lyrics{}
-	if err := json.Unmarshal(resBody, lyrics); err != nil {
-		return nil, err
+	if err := json.Unmarshal(respBody, lyrics); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal lyrics search response: %w", err)
 	}
 
 	return lyrics, nil
