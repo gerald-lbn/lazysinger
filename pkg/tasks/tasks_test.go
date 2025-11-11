@@ -1,10 +1,10 @@
-package worker_test
+package tasks_test
 
 import (
 	"context"
 
 	"github.com/gerald-lbn/refrain/pkg/music"
-	"github.com/gerald-lbn/refrain/pkg/worker"
+	"github.com/gerald-lbn/refrain/pkg/tasks"
 	"github.com/hibiken/asynq"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -32,7 +32,7 @@ var _ = Describe("NewDownloadLyricsTask", func() {
 	When("creating a new task", func() {
 		Context("with metadata", func() {
 			It("should succeed", func() {
-				task, err := worker.NewDownloadLyricsTask(metadata)
+				task, err := tasks.NewDownloadLyricsTask(metadata)
 
 				Expect(err).ToNot(HaveOccurred())
 				Expect(task).ToNot(BeNil())
@@ -62,11 +62,11 @@ var _ = Describe("HandleDownloadLyricsTask", func() {
 	When("handling task", func() {
 		Context("with a song which already has both lyrics", func() {
 			It("should skip the track", func() {
-				task, err := worker.NewDownloadLyricsTask(metadata)
+				task, err := tasks.NewDownloadLyricsTask(metadata)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(task).ToNot(BeNil())
 
-				err = worker.HandleDownloadLyricsTask(ctx, task)
+				err = tasks.HandleDownloadLyricsTask(ctx, task)
 				Expect(err).To(MatchError(asynq.RevokeTask))
 
 			})
@@ -84,11 +84,11 @@ var _ = Describe("HandleDownloadLyricsTask", func() {
 				})
 
 				It("should fetch lyrics and return no errors", func() {
-					task, err := worker.NewDownloadLyricsTask(metadata)
+					task, err := tasks.NewDownloadLyricsTask(metadata)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(task).ToNot(BeNil())
 
-					err = worker.HandleDownloadLyricsTask(ctx, task)
+					err = tasks.HandleDownloadLyricsTask(ctx, task)
 					Expect(err).ToNot(HaveOccurred())
 				})
 			})
@@ -101,22 +101,22 @@ var _ = Describe("HandleDownloadLyricsTask", func() {
 				})
 
 				It("shouldn't fetch lyrics and return an error", func() {
-					task, err := worker.NewDownloadLyricsTask(metadata)
+					task, err := tasks.NewDownloadLyricsTask(metadata)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(task).ToNot(BeNil())
 
-					err = worker.HandleDownloadLyricsTask(ctx, task)
+					err = tasks.HandleDownloadLyricsTask(ctx, task)
 					Expect(err).To(MatchError(asynq.SkipRetry))
 				})
 			})
 
 			Context("with the title, the artist and the album name specified", func() {
 				It("should fetch lyrics and return no errors", func() {
-					task, err := worker.NewDownloadLyricsTask(metadata)
+					task, err := tasks.NewDownloadLyricsTask(metadata)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(task).ToNot(BeNil())
 
-					err = worker.HandleDownloadLyricsTask(ctx, task)
+					err = tasks.HandleDownloadLyricsTask(ctx, task)
 					Expect(err).ToNot(HaveOccurred())
 				})
 			})

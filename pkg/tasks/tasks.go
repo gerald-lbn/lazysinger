@@ -1,4 +1,4 @@
-package worker
+package tasks
 
 import (
 	"context"
@@ -28,7 +28,6 @@ func NewDownloadLyricsTask(metadata music.Metadata) (*asynq.Task, error) {
 	return asynq.NewTask(
 		TypeDownloadLyrics,
 		payload,
-		asynq.Queue(DownloadLyricsQueue),
 		asynq.TaskID(metadata.Path),
 		asynq.MaxRetry(1),
 	), nil
