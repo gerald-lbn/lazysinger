@@ -1,7 +1,10 @@
 package lrclib_test
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"io"
 	"net/http"
 	"testing"
 
@@ -10,6 +13,14 @@ import (
 
 	"github.com/gerald-lbn/refrain/pkg/music/lrclib"
 )
+
+type mockRoundTripper struct {
+	roundTrip func(req *http.Request) (*http.Response, error)
+}
+
+func (m *mockRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	return m.roundTrip(req)
+}
 
 func TestProvider(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -97,13 +108,29 @@ var _ = Describe("LrcLib", func() {
 			})
 		})
 
-		// When("the API returns an HTTP error status", func() {
-		// 	It("should return an error indicating the API failure", func() {})
-		// })
+		When("the API returns an HTTP error status", func() {
+			It("should return an error indicating the API failure", func() {
+				status := http.StatusNotFound
+				body := "{\"message\":\"Failed to find specified track\",\"name\":\"TrackNotFound\",\"statusCode\":404}"
+				mockClient := &http.Client{
+					Transport: &mockRoundTripper{
+						roundTrip: func(req *http.Request) (*http.Response, error) {
+							return &http.Response{
+								StatusCode: status,
+								Body:       io.NopCloser(bytes.NewBufferString(body)),
+								Header:     make(http.Header),
+							}, nil
+						},
+					},
+				}
+				lrclibClient = lrclib.NewLRCLibProvider(lrclib.WithHttpClient(mockClient))
+				results, err := lrclibClient.SearchLyrics(ctx, lrclib.WithQuery("anything"))
 
-		// When("the API returns a malformed response", func() {
-		// 	It("should return an unmarshaling error", func() {})
-		// })
+				Expect(results).To(BeNil())
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal(fmt.Sprintf("LRCLib API request failed with status: %d. Reason: %s", status, body)))
+			})
+		})
 	})
 
 	Context("GetLyrics", func() {
@@ -163,17 +190,34 @@ var _ = Describe("LrcLib", func() {
 			})
 		})
 
-		// When("the API returns an HTTP error status", func() {
-		// 	It("should return an error indicating the API failure", func() {
-		// 		Expect(res).To(BeNil())
-		// 		Expect(err).To(HaveOccurred())
-		// 		Expect(err.Error()).To(ContainSubstring("LRCLib API error (500): Internal Server Error"))
-		// 	})
-		// })
+		When("the API returns an HTTP error status", func() {
+			It("should return an error indicating the API failure", func() {
+				status := http.StatusInternalServerError
+				body := "Internal Server Error"
+				mockClient := &http.Client{
+					Transport: &mockRoundTripper{
+						roundTrip: func(req *http.Request) (*http.Response, error) {
+							return &http.Response{
+								StatusCode: status,
+								Body:       io.NopCloser(bytes.NewBufferString(body)),
+								Header:     make(http.Header),
+							}, nil
+						},
+					},
+				}
+				lrclibClient = lrclib.NewLRCLibProvider(lrclib.WithHttpClient(mockClient))
 
-		// When("the API returns a malformed response", func() {
-		// 	It("should return an unmarshaling error", func() {})
-		// })
+				res, err := lrclibClient.GetLyrics(
+					ctx,
+					lrclib.WithTrackAndArtistName("Impose", "Bad Omens"),
+					263,
+				)
+
+				Expect(res).To(BeNil())
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal(fmt.Sprintf("LRCLib API request failed with status: %d. Reason: %s", status, body)))
+			})
+		})
 	})
 
 	Context("GetLyricsByID", func() {
@@ -204,13 +248,26 @@ var _ = Describe("LrcLib", func() {
 
 		When("the API returns an HTTP error status", func() {
 			It("should return an error indicating the API failure", func() {
-				// Logic for API HTTP error
-			})
-		})
+				status := http.StatusInternalServerError
+				body := "Internal Server Error"
+				mockClient := &http.Client{
+					Transport: &mockRoundTripper{
+						roundTrip: func(req *http.Request) (*http.Response, error) {
+							return &http.Response{
+								StatusCode: status,
+								Body:       io.NopCloser(bytes.NewBufferString(body)),
+								Header:     make(http.Header),
+							}, nil
+						},
+					},
+				}
+				lrclibClient = lrclib.NewLRCLibProvider(lrclib.WithHttpClient(mockClient))
 
-		When("the API returns a malformed response", func() {
-			It("should return an unmarshaling error", func() {
-				// Logic for malformed response
+				res, err := lrclibClient.GetLyricsByID(ctx, TakeMeBackToEdenLrcLibID)
+
+				Expect(res).To(BeNil())
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal(fmt.Sprintf("LRCLib API request failed with status: %d. Reason: %s", status, body)))
 			})
 		})
 	})
