@@ -16,7 +16,7 @@ type FileEventHandler func(event fsnotify.Event) error
 // WatcherService manages file system watching for multiple directories.
 type WatcherService struct {
 	watcher  *fsnotify.Watcher
-	handlers []FileEventHandler
+	handlers map[fsnotify.Op]FileEventHandler
 	done     chan struct{}
 	wg       sync.WaitGroup
 	mu       sync.RWMutex
@@ -31,29 +31,25 @@ func NewWatcherService() (*WatcherService, error) {
 
 	ws := &WatcherService{
 		watcher:  watcher,
-		handlers: make([]FileEventHandler, 0),
+		handlers: make(map[fsnotify.Op]FileEventHandler),
 		done:     make(chan struct{}),
 	}
 
 	return ws, nil
 }
 
-// AddPath adds a path to watch. If recursive is true, it will watch all subdirectories.
-func (ws *WatcherService) AddPath(path string, recursive bool) error {
+// AddPath adds a path recursively to watch.
+func (ws *WatcherService) AddPath(path string) error {
 	ws.mu.Lock()
 	defer ws.mu.Unlock()
 
-	if recursive {
-		return ws.addRecursive(path)
-	}
-
-	return ws.addPath(path)
+	return ws.addRecursive(path)
 }
 
 // AddPaths adds multiple paths to watch.
-func (ws *WatcherService) AddPaths(paths []string, recursive bool) error {
+func (ws *WatcherService) AddPaths(paths []string) error {
 	for _, path := range paths {
-		if err := ws.AddPath(path, recursive); err != nil {
+		if err := ws.AddPath(path); err != nil {
 			slog.Error("failed to add path to watcher",
 				"path", path,
 				"error", err)
@@ -100,11 +96,44 @@ func (ws *WatcherService) addRecursive(root string) error {
 	})
 }
 
-// RegisterHandler registers a callback function to handle file system events.
-func (ws *WatcherService) RegisterHandler(handler FileEventHandler) {
+// RegisterCreateHandler registers a callback function for create events.
+// Any previously registered handler for this event will be overwritten.
+func (ws *WatcherService) RegisterCreateHandler(handler FileEventHandler) {
 	ws.mu.Lock()
 	defer ws.mu.Unlock()
-	ws.handlers = append(ws.handlers, handler)
+	ws.handlers[fsnotify.Create] = handler
+}
+
+// RegisterWriteHandler registers a callback function for write events.
+// Any previously registered handler for this event will be overwritten.
+func (ws *WatcherService) RegisterWriteHandler(handler FileEventHandler) {
+	ws.mu.Lock()
+	defer ws.mu.Unlock()
+	ws.handlers[fsnotify.Write] = handler
+}
+
+// RegisterRenameHandler registers a callback for rename events.
+// Any previously registered handler for this event will be overwritten.
+func (ws *WatcherService) RegisterRenameHandler(handler FileEventHandler) {
+	ws.mu.Lock()
+	defer ws.mu.Unlock()
+	ws.handlers[fsnotify.Rename] = handler
+}
+
+// RegisterChmodHandler registers a callback for chmod events.
+// Any previously registered handler for this event will be overwritten.
+func (ws *WatcherService) RegisterChmodHandler(handler FileEventHandler) {
+	ws.mu.Lock()
+	defer ws.mu.Unlock()
+	ws.handlers[fsnotify.Chmod] = handler
+}
+
+// RegisterDeleteHandler registers a callback for delete events.
+// Any previously registered handler for this event will be overwritten.
+func (ws *WatcherService) RegisterDeleteHandler(handler FileEventHandler) {
+	ws.mu.Lock()
+	defer ws.mu.Unlock()
+	ws.handlers[fsnotify.Remove] = handler
 }
 
 // Start begins watching for file system events.
@@ -131,7 +160,7 @@ func (ws *WatcherService) watch() {
 
 			if event.Has(fsnotify.Create) {
 				if info, err := os.Stat(event.Name); err == nil && info.IsDir() {
-					if err := ws.AddPath(event.Name, true); err != nil {
+					if err := ws.AddPath(event.Name); err != nil {
 						slog.Error("failed to watch new directory",
 							"path", event.Name,
 							"error", err)
@@ -140,12 +169,14 @@ func (ws *WatcherService) watch() {
 			}
 
 			ws.mu.RLock()
-			for _, handler := range ws.handlers {
-				if err := handler(event); err != nil {
-					slog.Error("handler error",
-						"event", event.Op.String(),
-						"path", event.Name,
-						"error", err)
+			for op, handler := range ws.handlers {
+				if event.Has(op) {
+					if err := handler(event); err != nil {
+						slog.Error("handler error",
+							"event", event.Op.String(),
+							"path", event.Name,
+							"error", err)
+					}
 				}
 			}
 			ws.mu.RUnlock()
