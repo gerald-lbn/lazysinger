@@ -14,29 +14,38 @@ import (
 
 const (
 	TypeDownloadLyrics = "download:lyrics"
+
+	DownloadLyricsQueue = "download_lyrics"
 )
 
 type DownloadLyricsPayload struct {
-	music.Metadata
+	FilePath string
 }
 
-func NewDownloadLyricsTask(metadata music.Metadata) (*asynq.Task, error) {
-	payload, err := json.Marshal(DownloadLyricsPayload{metadata})
+func NewDownloadLyricsTask(path string) (*asynq.Task, error) {
+	payload, err := json.Marshal(DownloadLyricsPayload{FilePath: path})
 	if err != nil {
 		return nil, err
 	}
 	return asynq.NewTask(
 		TypeDownloadLyrics,
 		payload,
-		asynq.TaskID(metadata.Path),
+		asynq.TaskID(path),
 		asynq.MaxRetry(1),
+		asynq.Queue(DownloadLyricsQueue),
 	), nil
 }
 
 func HandleDownloadLyricsTask(ctx context.Context, t *asynq.Task) error {
-	var track DownloadLyricsPayload
-	if err := json.Unmarshal(t.Payload(), &track); err != nil {
+	var payload DownloadLyricsPayload
+	if err := json.Unmarshal(t.Payload(), &payload); err != nil {
 		return fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
+	}
+
+	track, err := music.ExtractMetadata(payload.FilePath)
+	if err != nil {
+		log.Printf("skipping track: '%s'. Reason: %s", payload.FilePath, err)
+		return asynq.SkipRetry
 	}
 
 	// Skip task if track already has both lyrics
