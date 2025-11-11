@@ -5,7 +5,6 @@ import (
 	"log/slog"
 
 	"github.com/gerald-lbn/refrain/config"
-	"github.com/hibiken/asynq"
 )
 
 // Container contains all services used by the application and provides an easy way to handle dependency
@@ -17,7 +16,7 @@ type Container struct {
 	// Watcher is the file watcher service.
 	Watcher *WatcherService
 
-	// WorkerServer stores a worker server
+	// Worker is the service responsible for background tasks.
 	Worker *WorkerService
 }
 
@@ -39,7 +38,9 @@ func (c *Container) Shutdown() error {
 	}
 
 	if c.Worker != nil {
-		c.Worker.server.Shutdown()
+		if err := c.Worker.Stop(); err != nil {
+			return fmt.Errorf("failed to stop worker: %w", err)
+		}
 	}
 
 	return nil
@@ -73,7 +74,7 @@ func (c *Container) initWatcher() {
 
 	// Add configured library paths
 	if len(c.Config.Libraries.Paths) > 0 {
-		if err := c.Watcher.AddPaths(c.Config.Libraries.Paths, true); err != nil {
+		if err := c.Watcher.AddPaths(c.Config.Libraries.Paths); err != nil {
 			slog.Warn("failed to add some library paths to watcher", "error", err)
 		}
 	}
@@ -82,26 +83,12 @@ func (c *Container) initWatcher() {
 	c.Watcher.Start()
 }
 
+// initWorker initializes the background worker service.
 func (c *Container) initWorker() {
-	worker, err := NewWorkerService()
-	if err != nil {
-		panic(fmt.Sprintf("failed to create worker service: %v", err))
-	}
+	worker := NewWorkerService(c.Config.Redis.Addr, c.Config.Worker.Concurrency)
 
 	c.Worker = worker
 
-	worker.server = asynq.NewServer(
-		asynq.RedisClientOpt{
-			Addr: c.Config.Redis.Addr,
-		},
-		asynq.Config{
-			Concurrency: c.Config.Worker.Concurrency,
-			Queues: map[string]int{
-				DownloadLyricsQueueName: 10,
-			},
-		})
-
-	// Start server
+	// Start the worker service
 	c.Worker.Start()
-
 }
