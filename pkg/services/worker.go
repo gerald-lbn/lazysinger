@@ -3,6 +3,7 @@ package services
 import (
 	"log/slog"
 
+	"github.com/gerald-lbn/refrain/pkg/tasks"
 	"github.com/hibiken/asynq"
 )
 
@@ -20,6 +21,9 @@ func newServer(redisAddr string, concurrency int) *asynq.Server {
 		asynq.RedisClientOpt{Addr: redisAddr},
 		asynq.Config{
 			Concurrency: concurrency,
+			Queues: map[string]int{
+				tasks.DownloadLyricsQueue: 10,
+			},
 		},
 	)
 }
@@ -41,6 +45,10 @@ func NewWorkerService(redisAddr string, concurrency int) *WorkerService {
 
 func (ws *WorkerService) RegisterHandler(taskType string, handler asynq.HandlerFunc) {
 	ws.mux.HandleFunc(taskType, handler)
+}
+
+func (ws *WorkerService) EnqueueTask(task *asynq.Task, opts ...asynq.Option) (*asynq.TaskInfo, error) {
+	return ws.client.Enqueue(task, opts...)
 }
 
 // Start starts the worker service.
