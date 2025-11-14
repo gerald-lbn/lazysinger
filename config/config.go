@@ -33,6 +33,7 @@ type (
 	// Config stores complete application configuration.
 	Config struct {
 		App       AppConfig
+		Database  DatabaseConfig
 		Libraries LibrariesConfig
 		Redis     RedisConfig
 		Worker    WorkerConfig
@@ -42,6 +43,13 @@ type (
 	AppConfig struct {
 		Name        string
 		Environment Environment
+	}
+
+	// DatabaseConfig stores the database configuration.
+	DatabaseConfig struct {
+		Driver         string
+		Connection     string
+		TestConnection string
 	}
 
 	// LibrariesConfig stores configuration for music libraries.
