@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/gerald-lbn/refrain/config"
+	"github.com/gerald-lbn/refrain/pkg/music/lrclib"
 )
 
 // Container contains all services used by the application and provides an easy way to handle dependency
@@ -18,12 +19,15 @@ type Container struct {
 
 	// Worker is the service responsible for background tasks.
 	Worker *WorkerService
+
+	LyricsProvider *lrclib.LRCLibProvider
 }
 
 // NewContainer creates and initializes a new Container.
 func NewContainer() *Container {
 	c := new(Container)
 	c.initConfig()
+	c.initLyricsProvider()
 	c.initWorker()
 	c.initWatcher()
 	return c
@@ -61,6 +65,11 @@ func (c *Container) initConfig() {
 	default:
 		slog.SetLogLoggerLevel(slog.LevelDebug)
 	}
+}
+
+// initLyrics providers initializes the lyrics provider
+func (c *Container) initLyricsProvider() {
+	c.LyricsProvider = lrclib.NewLRCLibProvider()
 }
 
 // initWatcher initializes the file watcher service.
