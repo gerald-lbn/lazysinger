@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/gerald-lbn/refrain/pkg/handlers"
@@ -84,7 +85,7 @@ func main() {
 
 		_, err = c.Tasks.Add(tasks.DownloadLyricsTask{
 			Path: event.Name,
-		}).Save()
+		}).Wait(5 * time.Second).Save()
 
 		if err != nil {
 			return err
