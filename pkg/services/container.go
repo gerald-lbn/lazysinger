@@ -8,8 +8,10 @@ import (
 	"strings"
 
 	"github.com/gerald-lbn/refrain/config"
+	"github.com/gerald-lbn/refrain/pkg/log"
 	"github.com/gerald-lbn/refrain/pkg/music/lrclib"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/mikestefanello/backlite"
 )
 
 // Container contains all services used by the application and provides an easy way to handle dependency
@@ -20,6 +22,9 @@ type Container struct {
 
 	// Database stores the connection to the database.
 	Database *sql.DB
+
+	// Tasks stores the task client.
+	Tasks *backlite.Client
 
 	// Watcher is the file watcher service.
 	Watcher *WatcherService
@@ -36,7 +41,7 @@ func NewContainer() *Container {
 	c.initConfig()
 	c.initDatabase()
 	c.initLyricsProvider()
-	c.initWorker()
+	c.initTasks()
 	c.initWatcher()
 	return c
 }
@@ -97,6 +102,27 @@ func (c *Container) initLyricsProvider() {
 	c.LyricsProvider = lrclib.NewLRCLibProvider()
 }
 
+func (c *Container) initTasks() {
+	var err error
+	// You could use a separate database for tasks, if you'd like, but using one
+	// makes transaction support easier.
+	c.Tasks, err = backlite.NewClient(backlite.ClientConfig{
+		DB:              c.Database,
+		Logger:          log.Default(),
+		NumWorkers:      c.Config.Tasks.GoRoutines,
+		ReleaseAfter:    c.Config.Tasks.ReleaseAfter,
+		CleanupInterval: c.Config.Tasks.CleanupInterval,
+	})
+
+	if err != nil {
+		panic(fmt.Sprintf("failed to create task client: %v", err))
+	}
+
+	if err = c.Tasks.Install(); err != nil {
+		panic(fmt.Sprintf("failed to install task schema: %v", err))
+	}
+}
+
 // initWatcher initializes the file watcher service.
 func (c *Container) initWatcher() {
 	watcher, err := NewWatcherService()
@@ -115,16 +141,6 @@ func (c *Container) initWatcher() {
 
 	// Start watching
 	c.Watcher.Start()
-}
-
-// initWorker initializes the background worker service.
-func (c *Container) initWorker() {
-	worker := NewWorkerService(c.Config.Redis.Addr, c.Config.Worker.Concurrency)
-
-	c.Worker = worker
-
-	// Start the worker service
-	c.Worker.Start()
 }
 
 // openDB opens a database connection.

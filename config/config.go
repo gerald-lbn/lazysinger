@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"strings"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -36,7 +37,7 @@ type (
 		Database  DatabaseConfig
 		Libraries LibrariesConfig
 		Redis     RedisConfig
-		Worker    WorkerConfig
+		Tasks     TasksConfig
 	}
 
 	// AppConfig stores the application configuration.
@@ -62,9 +63,12 @@ type (
 		Addr string
 	}
 
-	// Worker stores configuration for worker server
-	WorkerConfig struct {
-		Concurrency int
+	// TasksConfig stores the tasks configuration.
+	TasksConfig struct {
+		GoRoutines      int
+		ReleaseAfter    time.Duration
+		CleanupInterval time.Duration
+		ShutdownTimeout time.Duration
 	}
 )
 

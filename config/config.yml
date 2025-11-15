@@ -2,6 +2,10 @@ app:
   name: Refrain
   environment: "local"
 
+database:
+  driver: "sqlite3"
+  connection: "/data/refrain.db"
+
 libraries:
   paths:
     - "/music"
@@ -9,9 +13,8 @@ libraries:
 redis:
   addr: redis:6379
 
-database:
-  driver: "sqlite3"
-  connection: "/data/refrain.db"
-
-worker:
-  concurrency: 10
+tasks:
+  goroutines: 10
+  releaseAfter: "15m"
+  cleanupInterval: "1h"
+  shutdownTimeout: "10s"
