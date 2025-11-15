@@ -19,13 +19,16 @@ const (
 
 	// EnvTest represents the test environment.
 	EnvTest Environment = "test"
+
+	// EnvironmentVariableName is the name of the environment variable used to set the application environment.
+	AppEnvironmentVariableName = "REFRAIN_APP_ENVIRONMENT"
 )
 
 // SwitchEnvironment sets the environment variable used to dictate which environment the application is
 // currently running in.
 // This must be called prior to loading the configuration in order for it to take effect.
 func SwitchEnvironment(env Environment) {
-	if err := os.Setenv("REFRAIN_APP_ENVIRONMENT", string(env)); err != nil {
+	if err := os.Setenv(AppEnvironmentVariableName, string(env)); err != nil {
 		panic(err)
 	}
 }
