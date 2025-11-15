@@ -10,9 +10,6 @@ libraries:
   paths:
     - "/music"
 
-redis:
-  addr: redis:6379
-
 tasks:
   goroutines: 10
   releaseAfter: "15m"

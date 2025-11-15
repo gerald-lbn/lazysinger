@@ -14,9 +14,9 @@ var _ = Describe("Container", func() {
 
 			Expect(c.Config).ToNot(BeNil())
 			Expect(c.Watcher).ToNot(BeNil())
-			Expect(c.Worker).ToNot(BeNil())
 			Expect(c.LyricsProvider).ToNot(BeNil())
 			Expect(c.Database).ToNot(BeNil())
+			Expect(c.Tasks).ToNot(BeNil())
 		})
 	})
 })

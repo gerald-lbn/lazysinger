@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log/slog"
@@ -29,9 +30,6 @@ type Container struct {
 	// Watcher is the file watcher service.
 	Watcher *WatcherService
 
-	// Worker is the service responsible for background tasks.
-	Worker *WorkerService
-
 	LyricsProvider *lrclib.LRCLibProvider
 }
 
@@ -54,10 +52,14 @@ func (c *Container) Shutdown() error {
 		}
 	}
 
-	if c.Worker != nil {
-		if err := c.Worker.Stop(); err != nil {
-			return fmt.Errorf("failed to stop worker: %w", err)
-		}
+	// Shutdown the task runner.
+	taskCtx, taskCancel := context.WithTimeout(context.Background(), c.Config.Tasks.ShutdownTimeout)
+	defer taskCancel()
+	c.Tasks.Stop(taskCtx)
+
+	// Shutdown the database.
+	if err := c.Database.Close(); err != nil {
+		return err
 	}
 
 	return nil
