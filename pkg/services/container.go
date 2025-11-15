@@ -9,6 +9,7 @@ import (
 
 	"github.com/gerald-lbn/refrain/config"
 	"github.com/gerald-lbn/refrain/pkg/music/lrclib"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // Container contains all services used by the application and provides an easy way to handle dependency
@@ -17,7 +18,7 @@ type Container struct {
 	// Config stores the application configuration.
 	Config *config.Config
 
-	// Database stores the connection to the databas
+	// Database stores the connection to the database.
 	Database *sql.DB
 
 	// Watcher is the file watcher service.

@@ -9,5 +9,9 @@ libraries:
 redis:
   addr: redis:6379
 
+database:
+  driver: "sqlite3"
+  connection: "/data/refrain.db"
+
 worker:
   concurrency: 10
