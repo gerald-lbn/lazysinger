@@ -17,6 +17,7 @@ var _ = Describe("Container", func() {
 			Expect(c.LyricsProvider).ToNot(BeNil())
 			Expect(c.Database).ToNot(BeNil())
 			Expect(c.Tasks).ToNot(BeNil())
+			Expect(c.Web).ToNot(BeNil())
 		})
 	})
 })

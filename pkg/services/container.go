@@ -11,6 +11,7 @@ import (
 	"github.com/gerald-lbn/refrain/config"
 	"github.com/gerald-lbn/refrain/pkg/log"
 	"github.com/gerald-lbn/refrain/pkg/music/lrclib"
+	"github.com/labstack/echo/v4"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mikestefanello/backlite"
 )
@@ -30,6 +31,9 @@ type Container struct {
 	// Watcher is the file watcher service.
 	Watcher *WatcherService
 
+	// Web stores the web framework.
+	Web *echo.Echo
+
 	LyricsProvider *lrclib.LRCLibProvider
 }
 
@@ -37,6 +41,7 @@ type Container struct {
 func NewContainer() *Container {
 	c := new(Container)
 	c.initConfig()
+	c.initWeb()
 	c.initDatabase()
 	c.initLyricsProvider()
 	c.initTasks()
@@ -143,6 +148,12 @@ func (c *Container) initWatcher() {
 
 	// Start watching
 	c.Watcher.Start()
+}
+
+// initWeb initializes the web framework.
+func (c *Container) initWeb() {
+	c.Web = echo.New()
+	c.Web.HideBanner = true
 }
 
 // openDB opens a database connection.
