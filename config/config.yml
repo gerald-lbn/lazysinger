@@ -1,10 +1,23 @@
 app:
   name: Refrain
   environment: "local"
+  encryptionKey: ""
 
 database:
   driver: "sqlite3"
   connection: "/data/refrain.db"
+
+http:
+  hostname: ""
+  port: 8000
+  readTimeout: "5s"
+  writeTimeout: "10s"
+  idleTimeout: "2m"
+  shutdownTimeout: "10s"
+  tls:
+    enabled: false
+    certificate: ""
+    key: ""
 
 libraries:
   paths:

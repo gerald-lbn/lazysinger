@@ -35,6 +35,7 @@ type (
 	Config struct {
 		App       AppConfig
 		Database  DatabaseConfig
+		HTTP      HTTPConfig
 		Libraries LibrariesConfig
 		Redis     RedisConfig
 		Tasks     TasksConfig
@@ -42,8 +43,10 @@ type (
 
 	// AppConfig stores the application configuration.
 	AppConfig struct {
-		Name        string
-		Environment Environment
+		Name          string
+		Environment   Environment
+		EncryptionKey string
+		Timeout       time.Duration
 	}
 
 	// DatabaseConfig stores the database configuration.
@@ -51,6 +54,21 @@ type (
 		Driver         string
 		Connection     string
 		TestConnection string
+	}
+
+	// HTTPConfig stores HTTP configuration.
+	HTTPConfig struct {
+		Hostname        string
+		Port            uint16
+		ReadTimeout     time.Duration
+		WriteTimeout    time.Duration
+		IdleTimeout     time.Duration
+		ShutdownTimeout time.Duration
+		TLS             struct {
+			Enabled     bool
+			Certificate string
+			Key         string
+		}
 	}
 
 	// LibrariesConfig stores configuration for music libraries.
