@@ -69,7 +69,7 @@ func main() {
 	)
 
 	c.Watcher.RegisterCreateHandler(func(event fsnotify.Event) error {
-		slog.Info("create event detected",
+		slog.Debug("create event detected",
 			"operation", event.Op.String(),
 			"path", event.Name)
 
@@ -82,18 +82,26 @@ func main() {
 			return nil
 		}
 
+		_, err = c.Tasks.Add(tasks.DownloadLyricsTask{
+			Path: event.Name,
+		}).Save()
+
+		if err != nil {
+			return err
+		}
+
 		return nil
 	})
 
 	c.Watcher.RegisterWriteHandler(func(event fsnotify.Event) error {
-		slog.Info("write event detected",
+		slog.Debug("write event detected",
 			"operation", event.Op.String(),
 			"path", event.Name)
 		return nil
 	})
 
 	c.Watcher.RegisterDeleteHandler(func(event fsnotify.Event) error {
-		slog.Info("delete event detected",
+		slog.Debug("delete event detected",
 			"operation", event.Op.String(),
 			"path", event.Name,
 		)
@@ -101,7 +109,7 @@ func main() {
 	})
 
 	c.Watcher.RegisterRenameHandler(func(event fsnotify.Event) error {
-		slog.Info("rename event detected",
+		slog.Debug("rename event detected",
 			"operation", event.Op.String(),
 			"path", event.Name)
 		return nil
