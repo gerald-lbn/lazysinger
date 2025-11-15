@@ -1,11 +1,11 @@
 app:
   name: Refrain
-  environment: "local"
+  environment: "development"
   encryptionKey: ""
 
 database:
   driver: "sqlite3"
-  connection: "/data/refrain.db"
+  connection: "/data/refrain.db?_journal=WAL&_timeout=5000"
 
 http:
   hostname: ""
