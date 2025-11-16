@@ -29,6 +29,7 @@ func BuildRouter(c *services.Container) error {
 	c.Web.Use(recover.New())
 
 	// API Routers
+	c.Web.Get("/api/stats", controllers.NewSongsStatController(c).Index)
 	c.Web.Get("/api/tracks", controllers.NewSongsController(c).Index)
 	c.Web.Get("/api/tracks/:id", controllers.NewSongsController(c).Show)
 	c.Web.Get("/api/search/tracks", controllers.NewSongsController(c).Search)
