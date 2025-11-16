@@ -10,6 +10,7 @@ import (
 	"github.com/gerald-lbn/refrain/pkg/music"
 	"github.com/gerald-lbn/refrain/pkg/music/lrclib"
 	"github.com/gerald-lbn/refrain/pkg/services"
+	"github.com/gerald-lbn/refrain/pkg/utils/file"
 	"github.com/mikestefanello/backlite"
 )
 
@@ -33,6 +34,12 @@ func (t DownloadLyricsTask) Config() backlite.QueueConfig {
 
 func NewDownloadLyricsTaskQueue(c *services.Container) backlite.Queue {
 	return backlite.NewQueue(func(ctx context.Context, dlt DownloadLyricsTask) error {
+		if isAudio, err := file.IsAudioFile(dlt.Path); err != nil {
+			return err
+		} else if !isAudio {
+			return nil
+		}
+
 		track, err := music.ExtractMetadata(dlt.Path)
 		if err != nil {
 			return err
