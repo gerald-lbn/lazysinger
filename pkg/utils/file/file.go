@@ -16,6 +16,14 @@ func Exists(path string) bool {
 	return err == nil || !os.IsNotExist(err)
 }
 
+func IsDirectory(path string) (bool, error) {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false, err
+	}
+	return info.IsDir(), nil
+}
+
 // IsAudioFile reads the mimetype of a file to check if it's an audio file
 func IsAudioFile(path string) (bool, error) {
 	mtype, err := mimetype.DetectFile(path)
