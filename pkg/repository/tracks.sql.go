@@ -55,18 +55,38 @@ func (q *Queries) DeleteTrack(ctx context.Context, path string) error {
 }
 
 const getAllTracks = `-- name: GetAllTracks :many
-SELECT id, path, title, artist, album, duration, has_plain_lyrics, has_synced_lyrics FROM tracks
+SELECT
+    id,
+    path,
+    CAST(title AS TEXT),
+    CAST(artist AS TEXT),
+    CAST(album AS TEXT),
+    duration,
+    has_plain_lyrics,
+    has_synced_lyrics
+FROM tracks
 `
 
-func (q *Queries) GetAllTracks(ctx context.Context) ([]Track, error) {
+type GetAllTracksRow struct {
+	ID              int64   `json:"id"`
+	Path            string  `json:"path"`
+	Title           string  `json:"title"`
+	Artist          string  `json:"artist"`
+	Album           string  `json:"album"`
+	Duration        float64 `json:"duration"`
+	HasPlainLyrics  bool    `json:"has_plain_lyrics"`
+	HasSyncedLyrics bool    `json:"has_synced_lyrics"`
+}
+
+func (q *Queries) GetAllTracks(ctx context.Context) ([]GetAllTracksRow, error) {
 	rows, err := q.db.QueryContext(ctx, getAllTracks)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Track
+	var items []GetAllTracksRow
 	for rows.Next() {
-		var i Track
+		var i GetAllTracksRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Path,
@@ -90,13 +110,74 @@ func (q *Queries) GetAllTracks(ctx context.Context) ([]Track, error) {
 	return items, nil
 }
 
-const getTrackByID = `-- name: GetTrackByID :one
-SELECT id, path, title, artist, album, duration, has_plain_lyrics, has_synced_lyrics FROM tracks WHERE id = ? LIMIT 1
+const getStats = `-- name: GetStats :one
+SELECT
+    COUNT(*) AS total_tracks,
+    CAST(SUM(CASE WHEN has_plain_lyrics = 1 AND has_synced_lyrics = 1 THEN 1 ELSE 0 END) AS INTEGER) AS tracks_with_both_lyrics,
+    CAST(SUM(CASE WHEN has_plain_lyrics = 0 AND has_synced_lyrics = 1 THEN 1 ELSE 0 END) AS INTEGER) AS tracks_with_synced_only,
+    CAST(SUM(CASE WHEN has_plain_lyrics = 1 AND has_synced_lyrics = 0 THEN 1 ELSE 0 END) AS INTEGER) AS tracks_with_plain_only,
+    CAST(SUM(CASE WHEN has_plain_lyrics = 0 AND has_synced_lyrics = 0 THEN 1 ELSE 0 END) AS INTEGER) AS instrumental_tracks,
+    CAST(SUM(
+        CASE WHEN title IS NULL OR title = ''
+              OR artist IS NULL OR artist = ''
+              OR album IS NULL OR album = ''
+        THEN 1 ELSE 0 END
+    ) AS INTEGER) AS tracks_missing_metadata
+FROM tracks
 `
 
-func (q *Queries) GetTrackByID(ctx context.Context, id int64) (Track, error) {
+type GetStatsRow struct {
+	TotalTracks           int64 `json:"total_tracks"`
+	TracksWithBothLyrics  int64 `json:"tracks_with_both_lyrics"`
+	TracksWithSyncedOnly  int64 `json:"tracks_with_synced_only"`
+	TracksWithPlainOnly   int64 `json:"tracks_with_plain_only"`
+	InstrumentalTracks    int64 `json:"instrumental_tracks"`
+	TracksMissingMetadata int64 `json:"tracks_missing_metadata"`
+}
+
+func (q *Queries) GetStats(ctx context.Context) (GetStatsRow, error) {
+	row := q.db.QueryRowContext(ctx, getStats)
+	var i GetStatsRow
+	err := row.Scan(
+		&i.TotalTracks,
+		&i.TracksWithBothLyrics,
+		&i.TracksWithSyncedOnly,
+		&i.TracksWithPlainOnly,
+		&i.InstrumentalTracks,
+		&i.TracksMissingMetadata,
+	)
+	return i, err
+}
+
+const getTrackByID = `-- name: GetTrackByID :one
+SELECT
+    id,
+    path,
+    CAST(title AS TEXT),
+    CAST(artist AS TEXT),
+    CAST(album AS TEXT),
+    duration,
+    has_plain_lyrics,
+    has_synced_lyrics
+FROM tracks
+WHERE id = ?
+LIMIT 1
+`
+
+type GetTrackByIDRow struct {
+	ID              int64   `json:"id"`
+	Path            string  `json:"path"`
+	Title           string  `json:"title"`
+	Artist          string  `json:"artist"`
+	Album           string  `json:"album"`
+	Duration        float64 `json:"duration"`
+	HasPlainLyrics  bool    `json:"has_plain_lyrics"`
+	HasSyncedLyrics bool    `json:"has_synced_lyrics"`
+}
+
+func (q *Queries) GetTrackByID(ctx context.Context, id int64) (GetTrackByIDRow, error) {
 	row := q.db.QueryRowContext(ctx, getTrackByID, id)
-	var i Track
+	var i GetTrackByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.Path,
@@ -111,12 +192,34 @@ func (q *Queries) GetTrackByID(ctx context.Context, id int64) (Track, error) {
 }
 
 const getTrackByPath = `-- name: GetTrackByPath :one
-SELECT id, path, title, artist, album, duration, has_plain_lyrics, has_synced_lyrics FROM tracks WHERE path = ? LIMIT 1
+SELECT
+    id,
+    path,
+    CAST(title AS TEXT),
+    CAST(artist AS TEXT),
+    CAST(album AS TEXT),
+    duration,
+    has_plain_lyrics,
+    has_synced_lyrics
+FROM tracks
+WHERE path = ?
+LIMIT 1
 `
 
-func (q *Queries) GetTrackByPath(ctx context.Context, path string) (Track, error) {
+type GetTrackByPathRow struct {
+	ID              int64   `json:"id"`
+	Path            string  `json:"path"`
+	Title           string  `json:"title"`
+	Artist          string  `json:"artist"`
+	Album           string  `json:"album"`
+	Duration        float64 `json:"duration"`
+	HasPlainLyrics  bool    `json:"has_plain_lyrics"`
+	HasSyncedLyrics bool    `json:"has_synced_lyrics"`
+}
+
+func (q *Queries) GetTrackByPath(ctx context.Context, path string) (GetTrackByPathRow, error) {
 	row := q.db.QueryRowContext(ctx, getTrackByPath, path)
-	var i Track
+	var i GetTrackByPathRow
 	err := row.Scan(
 		&i.ID,
 		&i.Path,
@@ -130,80 +233,17 @@ func (q *Queries) GetTrackByPath(ctx context.Context, path string) (Track, error
 	return i, err
 }
 
-const getTracksByAlbum = `-- name: GetTracksByAlbum :many
-SELECT id, path, title, artist, album, duration, has_plain_lyrics, has_synced_lyrics FROM tracks WHERE album = ? ORDER BY title
-`
-
-func (q *Queries) GetTracksByAlbum(ctx context.Context, album sql.NullString) ([]Track, error) {
-	rows, err := q.db.QueryContext(ctx, getTracksByAlbum, album)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Track
-	for rows.Next() {
-		var i Track
-		if err := rows.Scan(
-			&i.ID,
-			&i.Path,
-			&i.Title,
-			&i.Artist,
-			&i.Album,
-			&i.Duration,
-			&i.HasPlainLyrics,
-			&i.HasSyncedLyrics,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getTracksByArtist = `-- name: GetTracksByArtist :many
-SELECT id, path, title, artist, album, duration, has_plain_lyrics, has_synced_lyrics FROM tracks WHERE artist = ? ORDER BY album, title
-`
-
-func (q *Queries) GetTracksByArtist(ctx context.Context, artist sql.NullString) ([]Track, error) {
-	rows, err := q.db.QueryContext(ctx, getTracksByArtist, artist)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Track
-	for rows.Next() {
-		var i Track
-		if err := rows.Scan(
-			&i.ID,
-			&i.Path,
-			&i.Title,
-			&i.Artist,
-			&i.Album,
-			&i.Duration,
-			&i.HasPlainLyrics,
-			&i.HasSyncedLyrics,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const searchTracks = `-- name: SearchTracks :many
-SELECT id, path, title, artist, album, duration, has_plain_lyrics, has_synced_lyrics FROM tracks
+SELECT
+    id,
+    path,
+    CAST(title AS TEXT),
+    CAST(artist AS TEXT),
+    CAST(album AS TEXT),
+    duration,
+    has_plain_lyrics,
+    has_synced_lyrics
+FROM tracks
 WHERE title LIKE ? OR artist LIKE ? OR album LIKE ?
 ORDER BY artist, album, title
 `
@@ -214,15 +254,26 @@ type SearchTracksParams struct {
 	Album  sql.NullString `json:"album"`
 }
 
-func (q *Queries) SearchTracks(ctx context.Context, arg SearchTracksParams) ([]Track, error) {
+type SearchTracksRow struct {
+	ID              int64   `json:"id"`
+	Path            string  `json:"path"`
+	Title           string  `json:"title"`
+	Artist          string  `json:"artist"`
+	Album           string  `json:"album"`
+	Duration        float64 `json:"duration"`
+	HasPlainLyrics  bool    `json:"has_plain_lyrics"`
+	HasSyncedLyrics bool    `json:"has_synced_lyrics"`
+}
+
+func (q *Queries) SearchTracks(ctx context.Context, arg SearchTracksParams) ([]SearchTracksRow, error) {
 	rows, err := q.db.QueryContext(ctx, searchTracks, arg.Title, arg.Artist, arg.Album)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Track
+	var items []SearchTracksRow
 	for rows.Next() {
-		var i Track
+		var i SearchTracksRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Path,
