@@ -36,7 +36,7 @@ func NewPersistTrackInfoQueue(c *services.Container) backlite.Queue {
 			return nil
 		}
 
-		if isAudio, err := music.IsAudio(ptit.Path); err != nil {
+		if isAudio, err := file.IsAudioFile(ptit.Path); err != nil {
 			return err
 		} else if !isAudio {
 			return nil
