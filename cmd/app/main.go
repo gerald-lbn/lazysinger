@@ -7,14 +7,12 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
-	"github.com/fsnotify/fsnotify"
+	"github.com/gerald-lbn/refrain/pkg/handlers"
 	"github.com/gerald-lbn/refrain/pkg/log"
 	"github.com/gerald-lbn/refrain/pkg/router"
 	"github.com/gerald-lbn/refrain/pkg/services"
 	"github.com/gerald-lbn/refrain/pkg/tasks"
-	"github.com/gerald-lbn/refrain/pkg/utils/file"
 )
 
 func main() {
@@ -33,7 +31,8 @@ func main() {
 	tasks.Register(c)
 
 	// Start the task runner to execute queued tasks.
-	c.Tasks.Start(context.Background())
+	ctx := context.Background()
+	c.Tasks.Start(ctx)
 
 	// Start the server.
 	go func() {
@@ -56,52 +55,9 @@ func main() {
 		"tasks", c.Config.Tasks,
 	)
 
-	c.Watcher.RegisterCreateHandler(func(event fsnotify.Event) error {
-		slog.Debug("create event detected",
-			"operation", event.Op.String(),
-			"path", event.Name)
-
-		ok, err := file.IsAudioFile(event.Name)
-		if err != nil {
-			return err
-		}
-
-		if !ok {
-			return nil
-		}
-
-		_, err = c.Tasks.Add(tasks.DownloadLyricsTask{
-			Path: event.Name,
-		}).Wait(5 * time.Second).Save()
-
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
-
-	c.Watcher.RegisterWriteHandler(func(event fsnotify.Event) error {
-		slog.Debug("write event detected",
-			"operation", event.Op.String(),
-			"path", event.Name)
-		return nil
-	})
-
-	c.Watcher.RegisterDeleteHandler(func(event fsnotify.Event) error {
-		slog.Debug("delete event detected",
-			"operation", event.Op.String(),
-			"path", event.Name,
-		)
-		return nil
-	})
-
-	c.Watcher.RegisterRenameHandler(func(event fsnotify.Event) error {
-		slog.Debug("rename event detected",
-			"operation", event.Op.String(),
-			"path", event.Name)
-		return nil
-	})
+	c.Watcher.RegisterCreateHandler(handlers.HandleCreate(c, ctx))
+	c.Watcher.RegisterRenameHandler(handlers.HandleRename(c, ctx))
+	c.Watcher.RegisterDeleteHandler(handlers.HandleDelete(c, ctx))
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)

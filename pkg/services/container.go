@@ -147,7 +147,7 @@ func (c *Container) initWatcher() {
 	}
 
 	// Start watching
-	c.Watcher.Start()
+	c.Watcher.Start(context.Background())
 }
 
 // initWeb initializes the web framework.

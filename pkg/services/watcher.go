@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
@@ -11,7 +12,7 @@ import (
 )
 
 // FileEventHandler is a callback function for handling file system events.
-type FileEventHandler func(event fsnotify.Event) error
+type FileEventHandler func(event fsnotify.Event, ctx context.Context) error
 
 // WatcherService manages file system watching for multiple directories.
 type WatcherService struct {
@@ -137,14 +138,14 @@ func (ws *WatcherService) RegisterDeleteHandler(handler FileEventHandler) {
 }
 
 // Start begins watching for file system events.
-func (ws *WatcherService) Start() {
+func (ws *WatcherService) Start(ctx context.Context) {
 	ws.wg.Add(1)
-	go ws.watch()
+	go ws.watch(ctx)
 	slog.Info("file watcher started")
 }
 
 // watch is the main event loop for processing file system events.
-func (ws *WatcherService) watch() {
+func (ws *WatcherService) watch(ctx context.Context) {
 	defer ws.wg.Done()
 
 	for {
@@ -171,7 +172,7 @@ func (ws *WatcherService) watch() {
 			ws.mu.RLock()
 			for op, handler := range ws.handlers {
 				if event.Has(op) {
-					if err := handler(event); err != nil {
+					if err := handler(event, ctx); err != nil {
 						slog.Error("handler error",
 							"event", event.Op.String(),
 							"path", event.Name,
