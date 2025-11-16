@@ -23,13 +23,13 @@ INSERT INTO tracks (
 `
 
 type CreateTrackParams struct {
-	Path            string
-	Title           sql.NullString
-	Artist          sql.NullString
-	Album           sql.NullString
-	Duration        float64
-	HasPlainLyrics  bool
-	HasSyncedLyrics bool
+	Path            string         `json:"path"`
+	Title           sql.NullString `json:"title"`
+	Artist          sql.NullString `json:"artist"`
+	Album           sql.NullString `json:"album"`
+	Duration        float64        `json:"duration"`
+	HasPlainLyrics  bool           `json:"has_plain_lyrics"`
+	HasSyncedLyrics bool           `json:"has_synced_lyrics"`
 }
 
 func (q *Queries) CreateTrack(ctx context.Context, arg CreateTrackParams) error {
@@ -88,6 +88,26 @@ func (q *Queries) GetAllTracks(ctx context.Context) ([]Track, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const getTrackByID = `-- name: GetTrackByID :one
+SELECT id, path, title, artist, album, duration, has_plain_lyrics, has_synced_lyrics FROM tracks WHERE id = ? LIMIT 1
+`
+
+func (q *Queries) GetTrackByID(ctx context.Context, id int64) (Track, error) {
+	row := q.db.QueryRowContext(ctx, getTrackByID, id)
+	var i Track
+	err := row.Scan(
+		&i.ID,
+		&i.Path,
+		&i.Title,
+		&i.Artist,
+		&i.Album,
+		&i.Duration,
+		&i.HasPlainLyrics,
+		&i.HasSyncedLyrics,
+	)
+	return i, err
 }
 
 const getTrackByPath = `-- name: GetTrackByPath :one
@@ -189,9 +209,9 @@ ORDER BY artist, album, title
 `
 
 type SearchTracksParams struct {
-	Title  sql.NullString
-	Artist sql.NullString
-	Album  sql.NullString
+	Title  sql.NullString `json:"title"`
+	Artist sql.NullString `json:"artist"`
+	Album  sql.NullString `json:"album"`
 }
 
 func (q *Queries) SearchTracks(ctx context.Context, arg SearchTracksParams) ([]Track, error) {
@@ -239,13 +259,13 @@ WHERE path = ?
 `
 
 type UpdateTrackParams struct {
-	Title           sql.NullString
-	Artist          sql.NullString
-	Album           sql.NullString
-	Duration        float64
-	HasPlainLyrics  bool
-	HasSyncedLyrics bool
-	Path            string
+	Title           sql.NullString `json:"title"`
+	Artist          sql.NullString `json:"artist"`
+	Album           sql.NullString `json:"album"`
+	Duration        float64        `json:"duration"`
+	HasPlainLyrics  bool           `json:"has_plain_lyrics"`
+	HasSyncedLyrics bool           `json:"has_synced_lyrics"`
+	Path            string         `json:"path"`
 }
 
 func (q *Queries) UpdateTrack(ctx context.Context, arg UpdateTrackParams) error {

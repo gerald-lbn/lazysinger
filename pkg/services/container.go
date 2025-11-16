@@ -11,7 +11,7 @@ import (
 	"github.com/gerald-lbn/refrain/config"
 	"github.com/gerald-lbn/refrain/pkg/log"
 	"github.com/gerald-lbn/refrain/pkg/music/lrclib"
-	"github.com/labstack/echo/v4"
+	"github.com/gofiber/fiber/v2"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mikestefanello/backlite"
 )
@@ -32,7 +32,7 @@ type Container struct {
 	Watcher *WatcherService
 
 	// Web stores the web framework.
-	Web *echo.Echo
+	Web *fiber.App
 
 	LyricsProvider *lrclib.LRCLibProvider
 }
@@ -152,8 +152,7 @@ func (c *Container) initWatcher() {
 
 // initWeb initializes the web framework.
 func (c *Container) initWeb() {
-	c.Web = echo.New()
-	c.Web.HideBanner = true
+	c.Web = fiber.New()
 }
 
 // openDB opens a database connection.

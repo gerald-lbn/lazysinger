@@ -2,19 +2,16 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
-	"errors"
 	"fmt"
 	"log/slog"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/gerald-lbn/refrain/pkg/handlers"
 	"github.com/gerald-lbn/refrain/pkg/log"
+	"github.com/gerald-lbn/refrain/pkg/router"
 	"github.com/gerald-lbn/refrain/pkg/services"
 	"github.com/gerald-lbn/refrain/pkg/tasks"
 	"github.com/gerald-lbn/refrain/pkg/utils/file"
@@ -28,7 +25,7 @@ func main() {
 	}()
 
 	// Build the router.
-	if err := handlers.BuildRouter(c); err != nil {
+	if err := router.BuildRouter(c); err != nil {
 		fatal("failed to build the router", err)
 	}
 
@@ -40,25 +37,15 @@ func main() {
 
 	// Start the server.
 	go func() {
-		srv := http.Server{
-			Addr:         fmt.Sprintf("%s:%d", c.Config.HTTP.Hostname, c.Config.HTTP.Port),
-			Handler:      c.Web,
-			ReadTimeout:  c.Config.HTTP.ReadTimeout,
-			WriteTimeout: c.Config.HTTP.WriteTimeout,
-			IdleTimeout:  c.Config.HTTP.IdleTimeout,
-		}
-
+		addr := fmt.Sprintf("%s:%d", c.Config.HTTP.Hostname, c.Config.HTTP.Port)
 		if c.Config.HTTP.TLS.Enabled {
-			certs, err := tls.LoadX509KeyPair(c.Config.HTTP.TLS.Certificate, c.Config.HTTP.TLS.Key)
-			fatal("cannot load TLS certificate", err)
-
-			srv.TLSConfig = &tls.Config{
-				Certificates: []tls.Certificate{certs},
+			if err := c.Web.ListenTLS(addr, c.Config.HTTP.TLS.Certificate, c.Config.HTTP.TLS.Key); err != nil {
+				fatal("failed to start the server", err)
 			}
-		}
-
-		if err := c.Web.StartServer(&srv); errors.Is(err, http.ErrServerClosed) {
-			fatal("shutting down the server", err)
+		} else {
+			if err := c.Web.Listen(addr); err != nil {
+				fatal("failed to start the server", err)
+			}
 		}
 	}()
 

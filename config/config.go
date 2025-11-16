@@ -61,13 +61,9 @@ type (
 
 	// HTTPConfig stores HTTP configuration.
 	HTTPConfig struct {
-		Hostname        string
-		Port            uint16
-		ReadTimeout     time.Duration
-		WriteTimeout    time.Duration
-		IdleTimeout     time.Duration
-		ShutdownTimeout time.Duration
-		TLS             struct {
+		Hostname string
+		Port     uint16
+		TLS      struct {
 			Enabled     bool
 			Certificate string
 			Key         string

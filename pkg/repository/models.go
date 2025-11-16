@@ -9,12 +9,12 @@ import (
 )
 
 type Track struct {
-	ID              int64
-	Path            string
-	Title           sql.NullString
-	Artist          sql.NullString
-	Album           sql.NullString
-	Duration        float64
-	HasPlainLyrics  bool
-	HasSyncedLyrics bool
+	ID              int64          `json:"id"`
+	Path            string         `json:"path"`
+	Title           sql.NullString `json:"title"`
+	Artist          sql.NullString `json:"artist"`
+	Album           sql.NullString `json:"album"`
+	Duration        float64        `json:"duration"`
+	HasPlainLyrics  bool           `json:"has_plain_lyrics"`
+	HasSyncedLyrics bool           `json:"has_synced_lyrics"`
 }

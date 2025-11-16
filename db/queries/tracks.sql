@@ -4,6 +4,9 @@ SELECT * FROM tracks;
 -- name: GetTrackByPath :one
 SELECT * FROM tracks WHERE path = ? LIMIT 1;
 
+-- name: GetTrackByID :one
+SELECT * FROM tracks WHERE id = ? LIMIT 1;
+
 -- name: CreateTrack :exec
 INSERT INTO tracks (
     path,
