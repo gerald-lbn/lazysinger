@@ -19,16 +19,19 @@ func HandleCreate(c *services.Container, ctx context.Context) services.FileEvent
 			"operation", event.Op.String(),
 			"path", event.Name)
 
-		ok, err := file.IsAudioFile(event.Name)
-		if err != nil {
+		if isDir, err := file.IsDirectory(event.Name); err != nil {
 			return err
-		}
-
-		if !ok {
+		} else if isDir {
 			return nil
 		}
 
-		_, err = c.Tasks.Add(tasks.DownloadLyricsTask{
+		if isAudio, err := file.IsAudioFile(event.Name); err != nil {
+			return err
+		} else if !isAudio {
+			return nil
+		}
+
+		_, err := c.Tasks.Add(tasks.DownloadLyricsTask{
 			Path: event.Name,
 		}).Wait(5 * time.Second).Save()
 
@@ -47,17 +50,9 @@ func HandleDelete(c *services.Container, ctx context.Context) services.FileEvent
 			"operation", event.Op.String(),
 			"path", event.Name)
 
-		ok, err := file.IsAudioFile(event.Name)
-		if err != nil {
-			return err
-		}
-
-		if !ok {
-			return nil
-		}
-
+		// Since the file is deleted, there is no way to know what has been deleted except for the path
 		repo := repository.New(c.Database)
-		err = repo.DeleteTrack(ctx, event.Name)
+		err := repo.DeleteTrack(ctx, event.Name)
 
 		// TODO: Remove potential tasks in queue which have the deleted track as a dependency
 
