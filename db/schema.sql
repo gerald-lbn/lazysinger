@@ -1,3 +1,5 @@
+CREATE TABLE schema_migrations (version uint64,dirty bool);
+CREATE UNIQUE INDEX version_unique ON schema_migrations (version);
 CREATE TABLE backlite_tasks (
     id text PRIMARY KEY,
     created_at integer NOT NULL,
@@ -21,6 +23,20 @@ CREATE TABLE backlite_tasks_completed (
     error text
 ) STRICT;
 CREATE INDEX backlite_tasks_wait_until ON backlite_tasks (wait_until) WHERE wait_until IS NOT NULL;
-CREATE TABLE schema_migrations (version uint64,dirty bool);
-CREATE UNIQUE INDEX version_unique ON schema_migrations (version);
+CREATE TABLE tracks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    path TEXT NOT NULL UNIQUE,
+    title TEXT,
+    artist TEXT,
+    album TEXT,
+    duration REAL NOT NULL,
+    has_plain_lyrics BOOLEAN NOT NULL DEFAULT 0,
+    has_synced_lyrics BOOLEAN NOT NULL DEFAULT 0
+);
+CREATE INDEX idx_tracks_title ON tracks(title);
+CREATE INDEX idx_tracks_artist ON tracks(artist);
+CREATE INDEX idx_tracks_album ON tracks(album);
+CREATE INDEX idx_tracks_path ON tracks(path);
 -- Dbmate schema migrations
+INSERT INTO "schema_migrations" (version) VALUES
+  (20251116073135);
